@@ -889,6 +889,14 @@ html, body {
   line-height: 1.6;
 }
 
+/* ── Jump (disable animations during rapid traversal) ── */
+.no-animate *,
+.no-animate *::before,
+.no-animate *::after {
+  animation-duration: 0s !important;
+  transition-duration: 0s !important;
+}
+
 /* ── Utility ── */
 .hidden {
   display: none !important;

@@ -114,6 +114,7 @@ function initProgressBar() {
     const dot = document.createElement('div');
     dot.className = 'progress-dot';
     dot.dataset.stage = i;
+    dot.addEventListener('click', () => jumpToStage(i));
     progressDots.appendChild(dot);
   }
   updateProgressBar(1);
@@ -1260,6 +1261,42 @@ function goBack() {
   } else {
     updateProgressBar(1);
   }
+}
+
+function jumpToStage(targetStage) {
+  if (isAnimating) return;
+
+  // Find the index of the first step in the target stage
+  const targetIndex = steps.findIndex(s => s.stage === targetStage);
+  if (targetIndex === -1) return;
+  if (targetIndex === currentStep) return;
+
+  // Disable animations during rapid traversal
+  document.documentElement.classList.add('no-animate');
+
+  if (targetIndex > currentStep) {
+    // Fast-forward
+    while (currentStep < targetIndex) {
+      currentStep++;
+      steps[currentStep].forward();
+    }
+  } else {
+    // Rewind
+    while (currentStep >= targetIndex) {
+      steps[currentStep].backward();
+      currentStep--;
+    }
+    // Now step forward to land on the target
+    currentStep++;
+    steps[currentStep].forward();
+  }
+
+  updateProgressBar(steps[currentStep].stage);
+
+  // Re-enable animations on next frame
+  requestAnimationFrame(() => {
+    document.documentElement.classList.remove('no-animate');
+  });
 }
 
 // ── Keyboard handler ──
