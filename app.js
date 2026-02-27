@@ -1273,21 +1273,28 @@ Never push unless explicitly asked.</div>
       // Clear any events from a previous visit and reset cursor
       Playback.reset();
 
-      // If no session was loaded, show setup instructions
       if (Playback.getLoadedCount() === 0) {
+        // Show file picker + drag-and-drop zone
         feed.innerHTML = `
           <div class="playback-placeholder">
             <h3>📼 Build Playback</h3>
-            <p>Copy your Claude Code session JSONL here to replay the build step by step.</p>
-            <code>build-session.jsonl</code>
-            <p>Find it at:<br>
+            <p>Drop your Claude Code session file onto this slide, or click below to choose it.</p>
+            <label class="pb-file-btn">
+              Choose .jsonl file
+              <input type="file" accept=".jsonl" id="pb-file-input" style="display:none">
+            </label>
+            <p style="font-size:12px;color:var(--text-muted);margin-top:4px">
+              Find it at:<br>
               <code>~/.claude/projects/…/&lt;session-id&gt;.jsonl</code>
             </p>
-            <p style="font-size:12px;color:var(--text-muted)">
-              Serve over HTTP so the file can load:<br>
-              <code>python3 -m http.server 8080</code>
-            </p>
           </div>`;
+        document.getElementById('pb-file-input').addEventListener('change', (e) => {
+          const file = e.target.files[0];
+          if (file) Playback.loadFile(file);
+        });
+      } else {
+        // Already loaded (e.g. re-entering stage 9 after going back)
+        feed.innerHTML = `<div class="pb-ready">✓ ${Playback.getLoadedCount()} events loaded — press → to begin</div>`;
       }
 
       Playback.updateStatus();
@@ -1384,11 +1391,11 @@ document.addEventListener('keydown', (e) => {
 
 // ── Init ──
 
-async function init() {
+function init() {
   defineSteps();
-  // Load the build session JSONL (if present) and register event steps.
-  // This must complete before initProgressBar so the dot count is stable.
-  await Playback.load(addStep);
+  // Wire up Playback's drag-drop listeners and store addStep reference so
+  // that file loading can register event steps dynamically later.
+  Playback.init(addStep);
   initProgressBar();
   // Start at the first step
   goForward();

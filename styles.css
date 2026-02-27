@@ -1089,3 +1089,44 @@ html, body {
   display: block;
   margin: 4px 0;
 }
+
+/* File picker button */
+.pb-file-btn {
+  display: inline-block;
+  cursor: pointer;
+  padding: 9px 20px;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-size: 13px;
+  font-family: var(--font-sans);
+  color: var(--text-primary);
+  transition: background 0.2s, border-color 0.2s, color 0.2s;
+  margin-top: 4px;
+}
+
+.pb-file-btn:hover {
+  background: var(--bg-primary);
+  border-color: var(--blue);
+  color: var(--blue);
+}
+
+/* Drag-over highlight on the feed */
+#playback-feed.drag-over {
+  outline: 2px dashed var(--blue);
+  outline-offset: -4px;
+  background: var(--blue-dim);
+}
+
+/* Ready notice after file loads */
+.pb-ready {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--green);
+  text-align: center;
+  padding: 16px;
+  border: 1px solid rgba(63, 185, 80, 0.3);
+  border-radius: 8px;
+  background: var(--green-dim);
+  animation: messageIn 0.3s ease;
+}
