@@ -910,3 +910,182 @@ html, body {
   from { opacity: 0; }
   to { opacity: 1; }
 }
+
+/* ── Build Playback (Stage 9) ── */
+
+#left-panel.full {
+  flex: 1;
+}
+
+#playback-feed {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  scroll-behavior: smooth;
+}
+
+#playback-status {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-muted);
+  text-align: center;
+  padding: 8px 16px;
+  border-top: 1px solid var(--border);
+  background: var(--bg-tertiary);
+  letter-spacing: 0.3px;
+}
+
+/* Event cards reuse context-section colour scheme */
+.playback-event {
+  border-radius: 8px;
+  padding: 10px 14px;
+  border: 1px solid;
+  animation: messageIn 0.2s ease;
+}
+
+.playback-event.user-msg {
+  background: var(--blue-dim);
+  border-color: rgba(88, 166, 255, 0.25);
+}
+.playback-event.user-msg .context-label { color: var(--blue); }
+.playback-event.user-msg .dot { background: var(--blue); }
+
+.playback-event.assistant-msg {
+  background: var(--green-dim);
+  border-color: rgba(63, 185, 80, 0.25);
+}
+.playback-event.assistant-msg .context-label { color: var(--green); }
+.playback-event.assistant-msg .dot { background: var(--green); }
+
+.playback-event.thinking {
+  background: var(--purple-dim);
+  border-color: rgba(188, 140, 255, 0.15);
+  opacity: 0.7;
+}
+.playback-event.thinking .context-label { color: var(--purple); }
+.playback-event.thinking .dot { background: var(--purple); }
+
+.playback-event.tool-call {
+  background: var(--orange-dim);
+  border-color: rgba(210, 153, 34, 0.25);
+}
+.playback-event.tool-call .context-label { color: var(--orange); }
+.playback-event.tool-call .dot { background: var(--orange); }
+
+.playback-event.tool-result {
+  background: var(--cyan-dim);
+  border-color: rgba(57, 210, 192, 0.2);
+}
+.playback-event.tool-result .context-label { color: var(--cyan); }
+.playback-event.tool-result .dot { background: var(--cyan); }
+
+/* Body text inside events */
+.pb-body {
+  font-size: 12px;
+  line-height: 1.55;
+  white-space: pre-wrap;
+  word-break: break-word;
+  color: var(--text-secondary);
+  margin-top: 5px;
+}
+
+/* Monospace for code-like content (bash, file paths, JSON) */
+.pb-code {
+  font-family: var(--font-mono);
+}
+
+/* Tool name badge next to label */
+.pb-tool-name {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 600;
+  margin-left: 6px;
+  padding: 1px 6px;
+  border-radius: 4px;
+  background: rgba(255,255,255,0.06);
+}
+
+/* Inline diff colouring for Edit tool */
+.pb-minus { color: var(--red); }
+.pb-plus  { color: var(--green); }
+
+/* $ prompt symbol */
+.pb-prompt {
+  color: var(--text-muted);
+  user-select: none;
+}
+
+/* Subagent type badge in Task tool */
+.pb-badge {
+  font-size: 10px;
+  padding: 1px 5px;
+  border-radius: 3px;
+  background: rgba(188, 140, 255, 0.15);
+  color: var(--purple);
+  font-family: var(--font-mono);
+  vertical-align: middle;
+}
+
+/* Thinking label annotation */
+.pb-dim {
+  opacity: 0.5;
+  font-weight: 400;
+  font-size: 10px;
+  text-transform: none;
+  letter-spacing: 0;
+  margin-left: 4px;
+}
+
+/* Truncation hint */
+.pb-trunc {
+  color: var(--text-muted);
+  font-style: italic;
+  font-size: 11px;
+}
+
+/* Empty result */
+.pb-empty {
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+/* "No file loaded" placeholder */
+.playback-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  text-align: center;
+  padding: 40px;
+  gap: 12px;
+  color: var(--text-secondary);
+}
+
+.playback-placeholder h3 {
+  font-family: var(--font-sans);
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.playback-placeholder p {
+  font-size: 13px;
+  line-height: 1.7;
+  max-width: 380px;
+}
+
+.playback-placeholder code {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  background: var(--bg-primary);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 6px 12px;
+  color: var(--orange);
+  display: block;
+  margin: 4px 0;
+}

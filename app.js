@@ -14,6 +14,8 @@ const rightPanel = document.getElementById('right-panel');
 const chatMessages = document.getElementById('chat-messages');
 const chatInputText = document.getElementById('chat-input-text');
 const chatCursor = document.getElementById('chat-cursor');
+const chatInputArea = document.getElementById('chat-input-area');
+const chatHeaderTitle = document.querySelector('.chat-header-title');
 const rightPanelContent = document.getElementById('right-panel-content');
 const rightPanelTitle = document.querySelector('.right-panel-title');
 const progressDots = document.getElementById('progress-dots');
@@ -33,10 +35,11 @@ const STAGE_NAMES = [
   'RAG',
   'System Prompts',
   'Skills',
-  'Conclusion'
+  'Conclusion',
+  'Build Playback'
 ];
 
-const TOTAL_STAGES = 8;
+const TOTAL_STAGES = 9;
 
 // ── Utility functions ──
 
@@ -1244,6 +1247,64 @@ Never push unless explicitly asked.</div>
       fp.removeChild(fp.lastElementChild);
     }
   );
+
+  // ════════════════════════════════════════
+  // STAGE 9: Build Playback
+  // ════════════════════════════════════════
+
+  // Entry step: switch layout to full-width playback mode.
+  // The individual event steps are appended dynamically by Playback.load().
+  addStep(9,
+    () => {
+      // Expand left panel, hide right panel
+      leftPanel.classList.remove('split');
+      leftPanel.classList.add('full');
+      rightPanel.classList.remove('visible');
+      chatHeaderTitle.textContent = 'How This Was Built';
+
+      // Swap chat UI for playback feed
+      chatMessages.classList.add('hidden');
+      chatInputArea.classList.add('hidden');
+      const feed = document.getElementById('playback-feed');
+      const status = document.getElementById('playback-status');
+      feed.classList.remove('hidden');
+      status.classList.remove('hidden');
+
+      // Clear any events from a previous visit and reset cursor
+      Playback.reset();
+
+      // If no session was loaded, show setup instructions
+      if (Playback.getLoadedCount() === 0) {
+        feed.innerHTML = `
+          <div class="playback-placeholder">
+            <h3>📼 Build Playback</h3>
+            <p>Copy your Claude Code session JSONL here to replay the build step by step.</p>
+            <code>build-session.jsonl</code>
+            <p>Find it at:<br>
+              <code>~/.claude/projects/…/&lt;session-id&gt;.jsonl</code>
+            </p>
+            <p style="font-size:12px;color:var(--text-muted)">
+              Serve over HTTP so the file can load:<br>
+              <code>python3 -m http.server 8080</code>
+            </p>
+          </div>`;
+      }
+
+      Playback.updateStatus();
+    },
+    () => {
+      // Restore split layout and chat UI
+      leftPanel.classList.add('split');
+      leftPanel.classList.remove('full');
+      rightPanel.classList.add('visible');
+      chatHeaderTitle.textContent = 'Chat';
+
+      chatMessages.classList.remove('hidden');
+      chatInputArea.classList.remove('hidden');
+      document.getElementById('playback-feed').classList.add('hidden');
+      document.getElementById('playback-status').classList.add('hidden');
+    }
+  );
 }
 
 // ── Navigation ──
@@ -1323,8 +1384,11 @@ document.addEventListener('keydown', (e) => {
 
 // ── Init ──
 
-function init() {
+async function init() {
   defineSteps();
+  // Load the build session JSONL (if present) and register event steps.
+  // This must complete before initProgressBar so the dot count is stable.
+  await Playback.load(addStep);
   initProgressBar();
   // Start at the first step
   goForward();
