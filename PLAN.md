@@ -41,8 +41,8 @@ Split-panel layout that evolves:
 - **Goal**: First "aha" - the model doesn't remember anything, it re-reads everything
 
 ### Stage 3: Reasoning Models (Thinking)
-- Chat shows a more complex question (e.g. a logic puzzle)
-- Right panel shows a `<thinking>` block expanding in the API response
+- Chat shows a question that requires reasoning (e.g. "What is the capital of Czechoslovakia?" — a country that no longer exists)
+- Right panel shows a `<thinking>` block expanding in the API response, where the model reasons that Czechoslovakia dissolved in 1993 and decides to name the capitals of both successor states (Prague for Czechia, Bratislava for Slovakia)
 - The thinking content is shown but visually marked as "hidden from user"
 - Chat side only shows the final answer
 - **Goal**: Reasoning/chain-of-thought is just more context, same pattern
