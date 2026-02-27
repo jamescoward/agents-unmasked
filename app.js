@@ -408,7 +408,7 @@ function defineSteps() {
   // Step: New question in chat
   addStep(3,
     () => {
-      setInputText('I have 3 boxes. Box A contains a cat. I swap Box A and Box C, then swap Box B and Box C. Where is the cat?');
+      setInputText('What is the capital of Czechoslovakia?');
     },
     () => { clearInput(); }
   );
@@ -417,7 +417,7 @@ function defineSteps() {
   addStep(3,
     () => {
       clearInput();
-      msg4user = addChatMessage('user', 'I have 3 boxes. Box A contains a cat. I swap Box A and Box C, then swap Box B and Box C. Where is the cat?');
+      msg4user = addChatMessage('user', 'What is the capital of Czechoslovakia?');
       // Update right panel title
       rightPanelTitle.textContent = 'Under the Hood — Thinking';
       // Reset right panel content
@@ -441,14 +441,14 @@ function defineSteps() {
           <div style="text-align: center; color: var(--text-muted); font-size: 12px; padding: 4px;">⋮ (earlier messages)</div>
           <div class="context-section user-msg highlight-new">
             <div class="context-label"><span class="dot"></span> User</div>
-            <div class="context-body">I have 3 boxes. Box A contains a cat. I swap Box A and Box C, then swap Box B and Box C. Where is the cat?</div>
+            <div class="context-body">What is the capital of Czechoslovakia?</div>
           </div>
         </div>
       `);
     },
     () => {
       removeChatMessage(msg4user);
-      setInputText('I have 3 boxes. Box A contains a cat. I swap Box A and Box C, then swap Box B and Box C. Where is the cat?');
+      setInputText('What is the capital of Czechoslovakia?');
       restoreRightPanel('end-of-stage-2');
     }
   );
@@ -461,17 +461,13 @@ function defineSteps() {
         sections.innerHTML += `
           <div class="context-section thinking highlight-new">
             <div class="context-label"><span class="dot"></span> Thinking <span style="font-size: 10px; opacity: 0.6; font-weight: 400; text-transform: none;">(hidden from user)</span></div>
-            <div class="context-body">Let me trace through the swaps step by step:
+            <div class="context-body">The user is asking about Czechoslovakia, but that country no longer exists. It dissolved on 1 January 1993 into two independent states: the Czech Republic (now Czechia) and Slovakia.
 
-Start: Box A = cat, Box B = empty, Box C = empty
+Rather than just saying "it doesn't exist", I should be helpful and give them the capitals of both successor states:
+  - Czech Republic → Prague
+  - Slovakia → Bratislava
 
-Swap 1: Box A ↔ Box C
-  Box A = empty, Box B = empty, Box C = cat
-
-Swap 2: Box B ↔ Box C
-  Box A = empty, Box B = cat, Box C = empty
-
-So the cat ends up in Box B.</div>
+I'll also mention that the historic capital of Czechoslovakia was Prague.</div>
           </div>
         `;
         rightPanelContent.scrollTop = rightPanelContent.scrollHeight;
@@ -497,13 +493,13 @@ So the cat ends up in Box B.</div>
   let msg4asst;
   addStep(3,
     () => {
-      msg4asst = addChatMessage('assistant', 'The cat is in <strong>Box B</strong>. After swapping A↔C, the cat moved to Box C. Then swapping B↔C moved it to Box B.');
+      msg4asst = addChatMessage('assistant', 'Czechoslovakia dissolved in 1993. The historic capital was <strong>Prague</strong>, which is now the capital of the Czech Republic (Czechia). The capital of Slovakia is <strong>Bratislava</strong>.');
       const sections = document.getElementById('context-sections');
       if (sections) {
         sections.innerHTML += `
           <div class="context-section assistant-msg highlight-new">
             <div class="context-label"><span class="dot"></span> Assistant</div>
-            <div class="context-body">The cat is in Box B. After swapping A↔C, the cat moved to Box C. Then swapping B↔C moved it to Box B.</div>
+            <div class="context-body">Czechoslovakia dissolved in 1993. The historic capital was Prague (now capital of Czechia). The capital of Slovakia is Bratislava.</div>
           </div>
         `;
         rightPanelContent.scrollTop = rightPanelContent.scrollHeight;
