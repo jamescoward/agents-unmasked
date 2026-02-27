@@ -2,15 +2,36 @@
 //
 // SETUP INSTRUCTIONS
 // ──────────────────
-// 1. Find your Claude Code session file:
-//      ~/.claude/projects/-home-user-<project-name>/<session-id>.jsonl
-//    The session-id is a UUID (e.g. 4c20146b-e71b-4b70-8d3f-948a9df28768).
-//    Pick the session that represents the build you want to replay.
+// 1. Find your Claude Code session files:
+//      ~/.claude/projects/-home-user-<project-name>/
+//    There will be one or more <session-id>.jsonl files (top-level only —
+//    ignore the subdirectories, those are subagent logs).
 //
-// 2. Copy it here (same folder as index.html):
+// 2. If there are multiple session files (build spanned several sessions),
+//    merge and sort them by timestamp with this one-liner run from that dir:
+//
+//      node -e "
+//        const fs = require('fs');
+//        const files = fs.readdirSync('.').filter(f => f.endsWith('.jsonl'));
+//        const lines = [];
+//        for (const f of files) {
+//          for (const line of fs.readFileSync(f,'utf8').split('\n')) {
+//            if (!line.trim()) continue;
+//            try { const o = JSON.parse(line); lines.push([o.timestamp||'',line]); }
+//            catch {}
+//          }
+//        }
+//        lines.sort((a,b) => a[0].localeCompare(b[0]));
+//        fs.writeFileSync('build-session.jsonl', lines.map(l=>l[1]).join('\n'));
+//        console.log('Merged', lines.length, 'entries from', files.length, 'files');
+//      "
+//
+//    For a single session, just rename/copy the .jsonl directly.
+//
+// 3. Copy the result here (same folder as index.html):
 //      agents-unmasked/build-session.jsonl
 //
-// 3. Serve the folder over HTTP so the file can load:
+// 4. Serve the folder over HTTP so the file can load:
 //      npx serve .
 //    Then open the URL it prints (usually http://localhost:3000)
 //
