@@ -8,23 +8,24 @@
 //    ignore the subdirectories, those are subagent logs).
 //
 // 2. If there are multiple session files (build spanned several sessions),
-//    merge and sort them by timestamp with this one-liner run from that dir:
+//    merge and sort them by timestamp. Run this from that directory
+//    (heredoc avoids zsh history-expansion issues with !):
 //
-//      node -e "
-//        const fs = require('fs');
-//        const files = fs.readdirSync('.').filter(f => f.endsWith('.jsonl'));
-//        const lines = [];
-//        for (const f of files) {
-//          for (const line of fs.readFileSync(f,'utf8').split('\n')) {
-//            if (!line.trim()) continue;
-//            try { const o = JSON.parse(line); lines.push([o.timestamp||'',line]); }
-//            catch {}
-//          }
+//      node << 'EOF'
+//      const fs = require('fs');
+//      const files = fs.readdirSync('.').filter(f => f.endsWith('.jsonl'));
+//      const lines = [];
+//      for (const f of files) {
+//        for (const line of fs.readFileSync(f, 'utf8').split('\n')) {
+//          if (!line.trim()) continue;
+//          try { const o = JSON.parse(line); lines.push([o.timestamp || '', line]); }
+//          catch {}
 //        }
-//        lines.sort((a,b) => a[0].localeCompare(b[0]));
-//        fs.writeFileSync('build-session.jsonl', lines.map(l=>l[1]).join('\n'));
-//        console.log('Merged', lines.length, 'entries from', files.length, 'files');
-//      "
+//      }
+//      lines.sort((a, b) => a[0].localeCompare(b[0]));
+//      fs.writeFileSync('build-session.jsonl', lines.map(l => l[1]).join('\n'));
+//      console.log('Merged', lines.length, 'entries from', files.length, 'files');
+//      EOF
 //
 //    For a single session, just rename/copy the .jsonl directly.
 //
