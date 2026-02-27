@@ -7,11 +7,14 @@
 //    The session-id is a UUID (e.g. 4c20146b-e71b-4b70-8d3f-948a9df28768).
 //    Pick the session that represents the build you want to replay.
 //
-// 2. When the presentation reaches Stage 9 (Build Playback):
-//    - Drag-and-drop the .jsonl file onto the slide, OR
-//    - Click "Choose file" and pick it from the file dialog
+// 2. Copy it here (same folder as index.html):
+//      agents-unmasked/build-session.jsonl
 //
-// No server required — works when opening index.html directly in a browser.
+// 3. Serve the folder over HTTP so the file can load:
+//      npx serve .
+//    Then open the URL it prints (usually http://localhost:3000)
+//
+// The playback will load automatically on the final slide (Stage 9).
 // ─────────────────────────────────────────────────────────────────────────
 
 const Playback = (() => {
@@ -277,58 +280,26 @@ const Playback = (() => {
 
   // ── Public API ──
 
-  let _addStep = null;
-  let _listenersAttached = false;
+  async function load(addStep) {
+    try {
+      const res = await fetch('build-session.jsonl');
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const text = await res.text();
+      _events = parseJSONL(text);
+    } catch (_err) {
+      _events = [];
+    }
 
-  // Call once during app init to store addStep reference and wire up
-  // drag-and-drop on the feed element.
-  function init(addStepFn) {
-    _addStep = addStepFn;
+    // Register one step per event (appended after the stage 9 entry step)
+    for (let i = 0; i < _events.length; i++) {
+      addStep(9, () => showNext(), () => showPrev());
+    }
 
-    const feed = document.getElementById('playback-feed');
-    if (!feed || _listenersAttached) return;
-    _listenersAttached = true;
-
-    feed.addEventListener('dragover', (e) => {
-      e.preventDefault();
-      feed.classList.add('drag-over');
-    });
-    feed.addEventListener('dragleave', (e) => {
-      // Only remove if leaving the feed itself (not a child element)
-      if (!feed.contains(e.relatedTarget)) feed.classList.remove('drag-over');
-    });
-    feed.addEventListener('drop', (e) => {
-      e.preventDefault();
-      feed.classList.remove('drag-over');
-      const file = e.dataTransfer.files[0];
-      if (file) loadFile(file);
-    });
-  }
-
-  // Read a File object (from file input or drag-drop) and register steps.
-  function loadFile(file) {
-    if (_events.length > 0) return; // already loaded — reload the page to switch files
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      _events = parseJSONL(e.target.result);
-      // Register one step per event after the stage 9 entry step
-      if (_addStep) {
-        for (let i = 0; i < _events.length; i++) {
-          _addStep(9, () => showNext(), () => showPrev());
-        }
-      }
-      // Replace placeholder with a ready notice
-      const feed = getFeed();
-      if (feed) {
-        feed.innerHTML = `<div class="pb-ready">✓ ${_events.length} events loaded — press → to begin</div>`;
-      }
-      updateStatus();
-    };
-    reader.readAsText(file);
+    return _events.length;
   }
 
   function getLoadedCount() { return _events.length; }
 
-  return { init, loadFile, getLoadedCount, reset, updateStatus };
+  return { load, getLoadedCount, reset, updateStatus };
 
 })();

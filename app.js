@@ -1274,27 +1274,16 @@ Never push unless explicitly asked.</div>
       Playback.reset();
 
       if (Playback.getLoadedCount() === 0) {
-        // Show file picker + drag-and-drop zone
+        // build-session.jsonl not found — show setup instructions
         feed.innerHTML = `
           <div class="playback-placeholder">
             <h3>📼 Build Playback</h3>
-            <p>Drop your Claude Code session file onto this slide, or click below to choose it.</p>
-            <label class="pb-file-btn">
-              Choose .jsonl file
-              <input type="file" accept=".jsonl" id="pb-file-input" style="display:none">
-            </label>
-            <p style="font-size:12px;color:var(--text-muted);margin-top:4px">
-              Find it at:<br>
-              <code>~/.claude/projects/…/&lt;session-id&gt;.jsonl</code>
-            </p>
+            <p>Copy your Claude Code session file here, then serve the folder:</p>
+            <code>~/.claude/projects/…/&lt;session-id&gt;.jsonl</code>
+            <code style="color:var(--green)">→ agents-unmasked/build-session.jsonl</code>
+            <p style="margin-top:4px">Then run:</p>
+            <code>npx serve .</code>
           </div>`;
-        document.getElementById('pb-file-input').addEventListener('change', (e) => {
-          const file = e.target.files[0];
-          if (file) Playback.loadFile(file);
-        });
-      } else {
-        // Already loaded (e.g. re-entering stage 9 after going back)
-        feed.innerHTML = `<div class="pb-ready">✓ ${Playback.getLoadedCount()} events loaded — press → to begin</div>`;
       }
 
       Playback.updateStatus();
@@ -1391,11 +1380,11 @@ document.addEventListener('keydown', (e) => {
 
 // ── Init ──
 
-function init() {
+async function init() {
   defineSteps();
-  // Wire up Playback's drag-drop listeners and store addStep reference so
-  // that file loading can register event steps dynamically later.
-  Playback.init(addStep);
+  // Fetch build-session.jsonl and register event steps before the progress
+  // bar is drawn, so the dot count is stable from the start.
+  await Playback.load(addStep);
   initProgressBar();
   // Start at the first step
   goForward();
