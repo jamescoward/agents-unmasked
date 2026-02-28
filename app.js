@@ -865,19 +865,29 @@ I'll also mention that the historic capital of Czechoslovakia was Prague.</div>
   addStep(5,
     () => {
       msg6asst = addChatMessage('assistant', 'Our parental leave policy offers <strong>16 weeks of paid leave</strong> for all employees, regardless of gender or tenure. You can take it in continuous blocks or split it within the first 12 months. Additional unpaid leave of up to 8 weeks is also available upon request.');
-      const flow = document.getElementById('rag-flow');
-      flow.innerHTML += `
-        <div class="context-callout" style="margin-top: 12px; border-color: var(--yellow); color: var(--yellow);">
-          RAG is just "search, then put the results into context".<br>The result is no different than if you'd supplied those files yourself.
-        </div>
-      `;
       rightPanelContent.scrollTop = rightPanelContent.scrollHeight;
-      snapshotRightPanel('end-of-stage-5');
+      snapshotRightPanel('stage-5-assistant-response');
     },
     () => {
       removeChatMessage(msg6asst);
-      const flow = document.getElementById('rag-flow');
-      if (flow.lastElementChild) flow.removeChild(flow.lastElementChild);
+    }
+  );
+
+  // Step: The reveal
+  addStep(5,
+    () => {
+      rightPanelTitle.textContent = 'Under the Hood — RAG';
+      setRightPanelContent(`
+        <div style="display:flex;align-items:center;justify-content:center;height:100%;padding:32px;">
+          <div style="text-align:center;font-family:var(--font-sans);font-size:17px;line-height:1.8;color:var(--yellow);border:1px dashed var(--yellow);border-radius:12px;padding:36px 32px;background:var(--yellow-dim);max-width:440px;animation:messageIn 0.4s ease;">
+            The model has no knowledge of a company beyond its training data. What feels like knowing or learning is always this — content retrieved into context.
+          </div>
+        </div>
+      `);
+      snapshotRightPanel('end-of-stage-5');
+    },
+    () => {
+      restoreRightPanel('stage-5-assistant-response');
     }
   );
 
