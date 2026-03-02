@@ -94,6 +94,19 @@ function appendRightPanelContent(html) {
   rightPanelContent.scrollTop = rightPanelContent.scrollHeight;
 }
 
+function showPanelOverlay(color, colorDim, html) {
+  hidePanelOverlay();
+  const overlay = document.createElement('div');
+  overlay.id = 'panel-overlay';
+  overlay.innerHTML = `<div class="overlay-card" style="color:${color};border:1px dashed ${color};background:${colorDim};">${html}</div>`;
+  document.getElementById('right-panel').appendChild(overlay);
+}
+
+function hidePanelOverlay() {
+  const existing = document.getElementById('panel-overlay');
+  if (existing) existing.remove();
+}
+
 function snapshotRightPanel(key) {
   panelSnapshots[key] = {
     title: rightPanelTitle.textContent,
@@ -374,7 +387,6 @@ function defineSteps() {
       appendContextSection('assistant-msg', 'Assistant',
         "The capital of Spain is Madrid. It's located in the centre of the Iberian Peninsula and is known for its rich cultural heritage.");
       updateContextBar(14);
-      snapshotRightPanel('stage-2-before-reveal');
     },
     () => {
       removeChatMessage(msg3asst);
@@ -387,18 +399,13 @@ function defineSteps() {
   // Step: The reveal — "The entire conversation is sent every time"
   addStep(2,
     () => {
-      rightPanelTitle.textContent = 'Under the Hood — API Request';
-      setRightPanelContent(`
-        <div style="display:flex;align-items:center;justify-content:center;height:100%;padding:32px;">
-          <div style="text-align:center;font-family:var(--font-sans);font-size:17px;line-height:1.8;color:var(--orange);border:1px dashed var(--orange);border-radius:12px;padding:36px 32px;background:var(--orange-dim);max-width:440px;animation:messageIn 0.4s ease;">
-            The <strong>entire</strong> conversation is sent with every request.<br>The model is stateless, it processes every message every time.
-          </div>
-        </div>
-      `);
+      showPanelOverlay('var(--orange)', 'var(--orange-dim)',
+        `The <strong>entire</strong> conversation is sent with every request.<br>The model is stateless, it processes every message every time.`
+      );
       snapshotRightPanel('end-of-stage-2');
     },
     () => {
-      restoreRightPanel('stage-2-before-reveal');
+      hidePanelOverlay();
     }
   );
 
@@ -409,6 +416,7 @@ function defineSteps() {
   // Step: New question in chat
   addStep(3,
     () => {
+      hidePanelOverlay();
       setInputText('What is the capital of Czechoslovakia?');
     },
     () => { clearInput(); }
@@ -699,7 +707,6 @@ I'll also mention that the historic capital of Czechoslovakia was Prague.</div>
       `;
       rightPanelContent.scrollTop = rightPanelContent.scrollHeight;
       msg5asst = addChatMessage('assistant', 'Done! I\'ve saved the capital cities to your notes.');
-      snapshotRightPanel('stage-4-before-reveal');
     },
     () => {
       removeChatMessage(msg5asst);
@@ -718,18 +725,13 @@ I'll also mention that the historic capital of Czechoslovakia was Prague.</div>
   // Step: The reveal — "An agent is just this loop"
   addStep(4,
     () => {
-      rightPanelTitle.textContent = 'Under the Hood — Tool Calling';
-      setRightPanelContent(`
-        <div style="display:flex;align-items:center;justify-content:center;height:100%;padding:32px;">
-          <div style="text-align:center;font-family:var(--font-sans);font-size:17px;line-height:1.8;color:var(--orange);border:1px dashed var(--orange);border-radius:12px;padding:36px 32px;background:var(--orange-dim);max-width:440px;animation:messageIn 0.4s ease;">
-            An "agent" is just this loop running until the model stops calling tools.<br>That's it.
-          </div>
-        </div>
-      `);
+      showPanelOverlay('var(--orange)', 'var(--orange-dim)',
+        `An "agent" is just this loop running until the model stops calling tools.<br>That's it.`
+      );
       snapshotRightPanel('end-of-stage-4');
     },
     () => {
-      restoreRightPanel('stage-4-before-reveal');
+      hidePanelOverlay();
     }
   );
 
@@ -739,6 +741,7 @@ I'll also mention that the historic capital of Czechoslovakia was Prague.</div>
 
   addStep(5,
     () => {
+      hidePanelOverlay();
       setInputText('What\'s our parental leave policy?');
     },
     () => { clearInput(); }
@@ -873,18 +876,13 @@ I'll also mention that the historic capital of Czechoslovakia was Prague.</div>
   // Step: The reveal
   addStep(5,
     () => {
-      rightPanelTitle.textContent = 'Under the Hood — RAG';
-      setRightPanelContent(`
-        <div style="display:flex;align-items:center;justify-content:center;height:100%;padding:32px;">
-          <div style="text-align:center;font-family:var(--font-sans);font-size:17px;line-height:1.8;color:var(--yellow);border:1px dashed var(--yellow);border-radius:12px;padding:36px 32px;background:var(--yellow-dim);max-width:440px;animation:messageIn 0.4s ease;">
-            The model isn't learning anything. What looks like institutional knowledge is just a search result injected into the context.
-          </div>
-        </div>
-      `);
+      showPanelOverlay('var(--yellow)', 'var(--yellow-dim)',
+        `The model isn't learning anything. What looks like institutional knowledge is just a search result injected into the context.`
+      );
       snapshotRightPanel('end-of-stage-5');
     },
     () => {
-      restoreRightPanel('stage-5-assistant-response');
+      hidePanelOverlay();
     }
   );
 
@@ -894,6 +892,7 @@ I'll also mention that the historic capital of Czechoslovakia was Prague.</div>
 
   addStep(6,
     () => {
+      hidePanelOverlay();
       rightPanelTitle.textContent = 'Under the Hood — System Prompt';
       setRightPanelContent(`
         <div id="context-sections">
