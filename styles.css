@@ -296,6 +296,38 @@ html, body {
   font-family: var(--font-mono);
   font-size: 13px;
   line-height: 1.6;
+  position: relative;
+}
+
+/* ── Panel Overlay (key takeaway callouts) ── */
+#panel-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 32px;
+  background: rgba(13, 17, 23, 0.72);
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
+  z-index: 10;
+  animation: overlayIn 0.35s ease;
+}
+
+@keyframes overlayIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+#panel-overlay .overlay-card {
+  text-align: center;
+  font-family: var(--font-sans);
+  font-size: 17px;
+  line-height: 1.8;
+  border-radius: 12px;
+  padding: 36px 32px;
+  max-width: 440px;
+  animation: messageIn 0.35s ease;
 }
 
 /* ── JSON Syntax Highlighting ── */
