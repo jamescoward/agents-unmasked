@@ -400,7 +400,7 @@ function defineSteps() {
   addStep(2,
     () => {
       showPanelOverlay('var(--orange)', 'var(--orange-dim)',
-        `The <strong>entire</strong> conversation is sent with every request.<br>The model is stateless — it re-reads everything each time.`
+        `The <strong>entire</strong> conversation is sent with every request.<br>The model is stateless, it processes every message every time.`
       );
       snapshotRightPanel('end-of-stage-2');
     },
@@ -726,7 +726,7 @@ I'll also mention that the historic capital of Czechoslovakia was Prague.</div>
   addStep(4,
     () => {
       showPanelOverlay('var(--orange)', 'var(--orange-dim)',
-        `An "agent" is just this loop running until the model<br>stops calling tools. That's it.`
+        `An "agent" is just this loop running until the model stops calling tools.<br>That's it.`
       );
       snapshotRightPanel('end-of-stage-4');
     },
@@ -877,7 +877,7 @@ I'll also mention that the historic capital of Czechoslovakia was Prague.</div>
   addStep(5,
     () => {
       showPanelOverlay('var(--yellow)', 'var(--yellow-dim)',
-        `The model has no knowledge of a company's documents beyond its training data. What feels like knowing or learning is always just content inserted into the context.`
+        `The model isn't learning anything. What looks like institutional knowledge is just a search result injected into the context.`
       );
       snapshotRightPanel('end-of-stage-5');
     },
