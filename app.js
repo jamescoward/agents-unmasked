@@ -165,6 +165,7 @@ function defineSteps() {
   addStep(1,
     () => {
       clearInput();
+      chatHeaderTitle.textContent = 'Copilot Chat';
       rightPanelTitle.textContent = '';
       setRightPanelContent(`
         <div class="title-slide">
@@ -400,7 +401,7 @@ function defineSteps() {
   addStep(2,
     () => {
       showPanelOverlay('var(--orange)', 'var(--orange-dim)',
-        `The <strong>entire</strong> conversation is sent with every request.<br>The model is stateless, it processes every message every time.`
+        `The model is stateless.<br>The <strong>whole conversation</strong> is sent on every request.`
       );
       snapshotRightPanel('end-of-stage-2');
     },
@@ -558,25 +559,92 @@ I'll also mention that the historic capital of Czechoslovakia was Prague.</div>
   // STAGE 4: Tool Calling (The Agent Loop)
   // ════════════════════════════════════════
 
-  // Step: User asks to save to notes
+  // Helpers shared by Stage 4 and Stage 5 (RAG is the same loop with a different tool)
+  function buildLoopFrame() {
+    return `
+      <div class="loop-frame">
+        <div class="loop-iteration-badge" id="loop-badge">Iteration 1</div>
+        <div class="loop-row">
+          <div class="loop-stack">
+            <div class="loop-step model-step" id="ls-model">
+              <div class="loop-step-title">🤖 Model</div>
+              <div class="loop-step-detail" id="ls-model-detail">Reads the whole conversation</div>
+            </div>
+            <div class="loop-arrow">↓ <span class="loop-arrow-label">tool_use</span></div>
+            <div class="loop-step tool-step" id="ls-tool">
+              <div class="loop-step-title">🔧 Tool call</div>
+              <div class="loop-step-detail" id="ls-tool-detail">(waiting)</div>
+            </div>
+            <div class="loop-arrow">↓</div>
+            <div class="loop-step harness-step" id="ls-harness">
+              <div class="loop-step-title">⚙️ Harness</div>
+              <div class="loop-step-detail" id="ls-harness-detail">(waiting)</div>
+            </div>
+          </div>
+          <svg class="loop-back-arrow" id="loop-back-arrow" viewBox="0 0 60 200" preserveAspectRatio="none" aria-hidden="true">
+            <path d="M 4 196 Q 55 196 55 100 Q 55 4 4 4" stroke="currentColor" stroke-width="2" stroke-dasharray="5 4" fill="none" />
+            <polygon points="0 4, 8 0, 8 8" fill="currentColor" />
+          </svg>
+        </div>
+        <div class="loop-status" id="loop-status">The harness wraps the model and runs tools on its behalf</div>
+      </div>
+    `;
+  }
+
+  function setLoopState({ iteration, model, tool, harness, status, active, pulseBack, exited }) {
+    const badge = document.getElementById('loop-badge');
+    const modelDetail = document.getElementById('ls-model-detail');
+    const toolDetail = document.getElementById('ls-tool-detail');
+    const harnessDetail = document.getElementById('ls-harness-detail');
+    const status_ = document.getElementById('loop-status');
+    const modelStep = document.getElementById('ls-model');
+    const toolStep = document.getElementById('ls-tool');
+    const harnessStep = document.getElementById('ls-harness');
+    const backArrow = document.getElementById('loop-back-arrow');
+
+    if (badge && iteration !== undefined) badge.textContent = iteration;
+    if (modelDetail && model !== undefined) modelDetail.innerHTML = model;
+    if (toolDetail && tool !== undefined) toolDetail.innerHTML = tool;
+    if (harnessDetail && harness !== undefined) harnessDetail.innerHTML = harness;
+    if (status_ && status !== undefined) status_.innerHTML = status;
+
+    [modelStep, toolStep, harnessStep].forEach(el => el && el.classList.remove('active'));
+    if (active === 'model' && modelStep) modelStep.classList.add('active');
+    if (active === 'tool' && toolStep) toolStep.classList.add('active');
+    if (active === 'harness' && harnessStep) harnessStep.classList.add('active');
+
+    if (backArrow) {
+      backArrow.classList.remove('pulse');
+      if (pulseBack) {
+        // restart animation
+        void backArrow.offsetWidth;
+        backArrow.classList.add('pulse');
+      }
+    }
+
+    [modelStep, toolStep, harnessStep].forEach(el => el && el.classList.toggle('dim', !!exited));
+  }
+
+  // Step: User types question
   addStep(4,
     () => {
+      chatHeaderTitle.textContent = 'Microsoft 365 Copilot';
       setInputText('Save these capitals to my notes');
     },
-    () => { clearInput(); }
+    () => {
+      chatHeaderTitle.textContent = 'Copilot Chat';
+      clearInput();
+    }
   );
 
+  // Step: User sends + scaffold the loop diagram
   let msg5user;
   addStep(4,
     () => {
       clearInput();
       msg5user = addChatMessage('user', 'Save these capitals to my notes');
       rightPanelTitle.textContent = 'Under the Hood — Tool Calling';
-      setRightPanelContent(`
-        <div id="loop-container">
-          <div class="loop-diagram" id="loop-diagram"></div>
-        </div>
-      `);
+      setRightPanelContent(buildLoopFrame());
     },
     () => {
       removeChatMessage(msg5user);
@@ -585,140 +653,118 @@ I'll also mention that the historic capital of Czechoslovakia was Prague.</div>
     }
   );
 
-  // Step: Show user message in loop
+  // Step: Iteration 1 — model decides to read the file
   addStep(4,
     () => {
-      const diagram = document.getElementById('loop-diagram');
-      diagram.innerHTML = `
-        <div class="loop-step user-step visible" id="ls-user">📨 User sends message</div>
-      `;
-      rightPanelContent.scrollTop = rightPanelContent.scrollHeight;
+      setLoopState({
+        iteration: 'Iteration 1',
+        active: 'tool',
+        model: 'Decides it needs to read the file first',
+        tool: 'read_file("notes.txt")',
+        harness: '(waiting)',
+        status: 'The model can\'t open files itself — it asks the harness to do it'
+      });
     },
     () => {
-      const diagram = document.getElementById('loop-diagram');
-      diagram.innerHTML = '';
+      setLoopState({
+        iteration: 'Iteration 1',
+        active: null,
+        model: 'Reads the whole conversation',
+        tool: '(waiting)',
+        harness: '(waiting)',
+        status: 'The harness wraps the model and runs tools on its behalf'
+      });
     }
   );
 
-  // Step: Arrow + model call #1
+  // Step: Iteration 1 — harness runs the read, loop pulses back to top
   addStep(4,
     () => {
-      const diagram = document.getElementById('loop-diagram');
-      diagram.innerHTML += `
-        <div class="loop-arrow visible">↓</div>
-        <div class="loop-step model-step visible active" id="ls-model1">🤖 Model (API call #1)</div>
-      `;
-      rightPanelContent.scrollTop = rightPanelContent.scrollHeight;
+      setLoopState({
+        active: 'harness',
+        harness: 'Opens notes.txt → returns the contents',
+        status: 'Tool result is added to the context. Loop back to the model.',
+        pulseBack: true
+      });
     },
     () => {
-      const diagram = document.getElementById('loop-diagram');
-      diagram.removeChild(diagram.lastElementChild);
-      diagram.removeChild(diagram.lastElementChild);
+      setLoopState({
+        active: 'tool',
+        harness: '(waiting)',
+        status: 'The model can\'t open files itself — it asks the harness to do it'
+      });
     }
   );
 
-  // Step: Model asks to read the file first
+  // Step: Iteration 2 — model decides to write
   addStep(4,
     () => {
-      const diagram = document.getElementById('loop-diagram');
-      const model1 = document.getElementById('ls-model1');
-      if (model1) model1.classList.remove('active');
-      diagram.innerHTML += `
-        <div class="loop-arrow visible">↓</div>
-        <div class="loop-step tool-step visible active" id="ls-toolcall1">🔧 tool_use: read_file("notes.txt")</div>
-        <div class="loop-label visible">Model can't read files itself — it asks for a tool</div>
-      `;
-      rightPanelContent.scrollTop = rightPanelContent.scrollHeight;
+      setLoopState({
+        iteration: 'Iteration 2',
+        active: 'tool',
+        model: 'Sees the file, appends the capitals',
+        tool: 'write_file("notes.txt", …)',
+        harness: '(waiting)',
+        status: 'Same loop, different tool. The bubbles update.'
+      });
     },
     () => {
-      const diagram = document.getElementById('loop-diagram');
-      const model1 = document.getElementById('ls-model1');
-      if (model1) model1.classList.add('active');
-      diagram.removeChild(diagram.lastElementChild);
-      diagram.removeChild(diagram.lastElementChild);
-      diagram.removeChild(diagram.lastElementChild);
+      setLoopState({
+        iteration: 'Iteration 1',
+        active: 'harness',
+        model: 'Decides it needs to read the file first',
+        tool: 'read_file("notes.txt")',
+        harness: 'Opens notes.txt → returns the contents',
+        status: 'Tool result is added to the context. Loop back to the model.'
+      });
     }
   );
 
-  // Step: Harness reads the file
+  // Step: Iteration 2 — harness writes, loop pulses back
   addStep(4,
     () => {
-      const diagram = document.getElementById('loop-diagram');
-      const tc1 = document.getElementById('ls-toolcall1');
-      if (tc1) tc1.classList.remove('active');
-      diagram.innerHTML += `
-        <div class="loop-arrow visible">↓</div>
-        <div class="loop-step harness-step visible active" id="ls-harness1">⚙️ Harness reads the file</div>
-        <div class="loop-label visible">The harness opens notes.txt and returns the contents</div>
-      `;
-      rightPanelContent.scrollTop = rightPanelContent.scrollHeight;
+      setLoopState({
+        active: 'harness',
+        harness: 'Writes notes.txt → returns success',
+        status: 'Tool result is added to the context. Loop back to the model.',
+        pulseBack: true
+      });
     },
     () => {
-      const diagram = document.getElementById('loop-diagram');
-      const tc1 = document.getElementById('ls-toolcall1');
-      if (tc1) tc1.classList.add('active');
-      diagram.removeChild(diagram.lastElementChild);
-      diagram.removeChild(diagram.lastElementChild);
-      diagram.removeChild(diagram.lastElementChild);
+      setLoopState({
+        active: 'tool',
+        harness: '(waiting)',
+        status: 'Same loop, different tool. The bubbles update.'
+      });
     }
   );
 
-  // Step: Model call #2 → asks to write
-  addStep(4,
-    () => {
-      const diagram = document.getElementById('loop-diagram');
-      const h1 = document.getElementById('ls-harness1');
-      if (h1) h1.classList.remove('active');
-      diagram.innerHTML += `
-        <div class="loop-arrow visible">↓</div>
-        <div class="loop-step model-step visible" id="ls-model2">🤖 Model (API call #2)</div>
-        <div class="loop-arrow visible">↓</div>
-        <div class="loop-step tool-step visible active" id="ls-toolcall2">🔧 tool_use: write_file("notes.txt", ...)</div>
-        <div class="loop-label visible">Model sees the contents, appends the capitals, asks to write</div>
-      `;
-      rightPanelContent.scrollTop = rightPanelContent.scrollHeight;
-    },
-    () => {
-      const diagram = document.getElementById('loop-diagram');
-      const h1 = document.getElementById('ls-harness1');
-      if (h1) h1.classList.add('active');
-      diagram.removeChild(diagram.lastElementChild);
-      diagram.removeChild(diagram.lastElementChild);
-      diagram.removeChild(diagram.lastElementChild);
-      diagram.removeChild(diagram.lastElementChild);
-      diagram.removeChild(diagram.lastElementChild);
-    }
-  );
-
-  // Step: Harness writes, model call #3, final response
+  // Step: Loop exits — model returns text, no more tool calls
   let msg5asst;
   addStep(4,
     () => {
-      const diagram = document.getElementById('loop-diagram');
-      const tc2 = document.getElementById('ls-toolcall2');
-      if (tc2) tc2.classList.remove('active');
-      diagram.innerHTML += `
-        <div class="loop-arrow visible">↓</div>
-        <div class="loop-step harness-step visible" id="ls-harness2">⚙️ Harness writes the file</div>
-        <div class="loop-arrow visible">↓</div>
-        <div class="loop-step model-step visible" id="ls-model3">🤖 Model (API call #3)</div>
-        <div class="loop-arrow visible">↓</div>
-        <div class="loop-step response-step visible" id="ls-response">💬 Text response (no more tool calls)</div>
-      `;
-      rightPanelContent.scrollTop = rightPanelContent.scrollHeight;
+      setLoopState({
+        iteration: 'Loop exits',
+        active: 'model',
+        model: 'No more tools needed. Returns a text reply.',
+        tool: '(none — model returned text)',
+        harness: '(idle)',
+        status: 'Loop exits when the model stops calling tools.',
+        exited: true
+      });
       msg5asst = addChatMessage('assistant', 'Done! I\'ve saved the capital cities to your notes.');
     },
     () => {
       removeChatMessage(msg5asst);
-      const diagram = document.getElementById('loop-diagram');
-      const tc2 = document.getElementById('ls-toolcall2');
-      if (tc2) tc2.classList.add('active');
-      diagram.removeChild(diagram.lastElementChild);
-      diagram.removeChild(diagram.lastElementChild);
-      diagram.removeChild(diagram.lastElementChild);
-      diagram.removeChild(diagram.lastElementChild);
-      diagram.removeChild(diagram.lastElementChild);
-      diagram.removeChild(diagram.lastElementChild);
+      setLoopState({
+        iteration: 'Iteration 2',
+        active: 'harness',
+        model: 'Sees the file, appends the capitals',
+        tool: 'write_file("notes.txt", …)',
+        harness: 'Writes notes.txt → returns success',
+        status: 'Tool result is added to the context. Loop back to the model.',
+        exited: false
+      });
     }
   );
 
@@ -747,129 +793,123 @@ I'll also mention that the historic capital of Czechoslovakia was Prague.</div>
     () => { clearInput(); }
   );
 
+  // Step: Send the question — user message appears in chat AND in the right panel context immediately
   let msg6user;
   addStep(5,
     () => {
       clearInput();
-      msg6user = addChatMessage('user', 'What\'s our parental leave policy?');
+      msg6user = addChatMessage('user', "What's our parental leave policy?");
       rightPanelTitle.textContent = 'Under the Hood — RAG';
       setRightPanelContent(`
-        <div class="rag-flow" id="rag-flow"></div>
+        <div id="rag-callback" class="loop-callback">↩ Remember the loop? RAG is just the model calling a search tool.</div>
+        <div id="rag-context-pre">
+          <div class="context-section user-msg highlight-new">
+            <div class="context-label"><span class="dot"></span> User</div>
+            <div class="context-body">What's our parental leave policy?</div>
+          </div>
+        </div>
+        ${buildLoopFrame()}
+        <div id="rag-result"></div>
       `);
+      // Reset loop-frame defaults for RAG
+      setLoopState({
+        iteration: 'Iteration 1',
+        active: null,
+        model: 'Reads the conversation, sees a question about company docs',
+        tool: '(waiting)',
+        harness: '(waiting)',
+        status: 'The model decides whether to look something up — same loop as before'
+      });
     },
     () => {
       removeChatMessage(msg6user);
-      setInputText('What\'s our parental leave policy?');
+      setInputText("What's our parental leave policy?");
       restoreRightPanel('end-of-stage-4');
     }
   );
 
-  // Step: Query
+  // Step: Iteration 1 — model decides to search the knowledge base
   addStep(5,
     () => {
-      const flow = document.getElementById('rag-flow');
-      flow.innerHTML = `
-        <div class="rag-step query-step visible">📝 User query: "parental leave policy"</div>
-      `;
+      setLoopState({
+        active: 'tool',
+        model: 'Decides it needs to look this up',
+        tool: 'search_knowledge_base("parental leave policy")',
+        harness: '(waiting)',
+        status: 'The model can\'t see internal docs — it asks the harness to search'
+      });
     },
     () => {
-      document.getElementById('rag-flow').innerHTML = '';
+      setLoopState({
+        active: null,
+        model: 'Reads the conversation, sees a question about company docs',
+        tool: '(waiting)',
+        harness: '(waiting)',
+        status: 'The model decides whether to look something up — same loop as before'
+      });
     }
   );
 
-  // Step: Search
+  // Step: Iteration 1 — harness queries the company knowledge base, loop pulses back
   addStep(5,
     () => {
-      const flow = document.getElementById('rag-flow');
-      flow.innerHTML += `
-        <div class="rag-arrow visible">↓</div>
-        <div class="rag-step search-step visible">🔍 Search vector index</div>
-        <div class="loop-label visible">Before calling the model, search for relevant documents</div>
-      `;
-    },
-    () => {
-      const flow = document.getElementById('rag-flow');
-      flow.removeChild(flow.lastElementChild);
-      flow.removeChild(flow.lastElementChild);
-      flow.removeChild(flow.lastElementChild);
-    }
-  );
-
-  // Step: Retrieve chunks
-  addStep(5,
-    () => {
-      const flow = document.getElementById('rag-flow');
-      flow.innerHTML += `
-        <div class="rag-arrow visible">↓</div>
-        <div class="rag-step retrieve-step visible">📄 Retrieved 3 chunks</div>
-      `;
-    },
-    () => {
-      const flow = document.getElementById('rag-flow');
-      flow.removeChild(flow.lastElementChild);
-      flow.removeChild(flow.lastElementChild);
-    }
-  );
-
-  // Step: Inject into context
-  addStep(5,
-    () => {
-      const flow = document.getElementById('rag-flow');
-      flow.innerHTML += `
-        <div class="rag-arrow visible">↓</div>
-        <div class="rag-step inject-step visible">💉 Inject into context window</div>
-      `;
-    },
-    () => {
-      const flow = document.getElementById('rag-flow');
-      flow.removeChild(flow.lastElementChild);
-      flow.removeChild(flow.lastElementChild);
-    }
-  );
-
-  // Step: Show what context looks like now
-  addStep(5,
-    () => {
-      const flow = document.getElementById('rag-flow');
-      flow.innerHTML += `
-        <div class="rag-arrow visible">↓</div>
-        <div class="rag-step model-step visible">🤖 Call model with enriched context</div>
-        <div style="width: 100%; margin-top: 16px;">
-          <div class="context-section rag">
-            <div class="context-label"><span class="dot"></span> Retrieved Documents</div>
-            <div class="context-body">[handbook/parental-leave.md]
-"All employees are entitled to 16 weeks of paid parental leave. Leave can be taken in blocks or continuously within the first 12 months..."
+      setLoopState({
+        active: 'harness',
+        harness: 'Searches the company knowledge base → returns matching passages',
+        status: 'Tool result is added to the context. Loop back to the model.',
+        pulseBack: true
+      });
+      const result = document.getElementById('rag-result');
+      result.innerHTML = `
+        <div class="context-section rag highlight-new" style="margin-top: 14px;">
+          <div class="context-label"><span class="dot"></span> Tool result — passages from the company knowledge base</div>
+          <div class="context-body">[handbook/parental-leave.md]
+"All employees are entitled to 16 weeks of paid parental leave. Leave can be taken in blocks or continuously within the first 12 months…"
 
 [handbook/benefits-overview.md]
-"Parental leave is available to all employees regardless of gender or tenure. Additional unpaid leave of up to 8 weeks may be requested..."</div>
-          </div>
-          <div class="context-section user-msg">
-            <div class="context-label"><span class="dot"></span> User</div>
-            <div class="context-body">What's our parental leave policy?</div>
-          </div>
+"Parental leave is available to all employees regardless of gender or tenure. Additional unpaid leave of up to 8 weeks may be requested…"</div>
         </div>
       `;
       rightPanelContent.scrollTop = rightPanelContent.scrollHeight;
     },
     () => {
-      const flow = document.getElementById('rag-flow');
-      // Remove last 3 items
-      flow.removeChild(flow.lastElementChild);
-      flow.removeChild(flow.lastElementChild);
-      flow.removeChild(flow.lastElementChild);
+      setLoopState({
+        active: 'tool',
+        harness: '(waiting)',
+        status: 'The model can\'t see internal docs — it asks the harness to search'
+      });
+      document.getElementById('rag-result').innerHTML = '';
     }
   );
 
-  // Step: Assistant responds
+  // Step: Iteration 2 — model uses the passages to answer (loop exits), assistant message appears
   let msg6asst;
   addStep(5,
     () => {
+      setLoopState({
+        iteration: 'Loop exits',
+        active: 'model',
+        model: 'Reads the passages, writes the answer. No more tools needed.',
+        tool: '(none — model returned text)',
+        harness: '(idle)',
+        status: 'Loop exits when the model stops calling tools.',
+        exited: true
+      });
       msg6asst = addChatMessage('assistant', 'Our parental leave policy offers <strong>16 weeks of paid leave</strong> for all employees, regardless of gender or tenure. You can take it in continuous blocks or split it within the first 12 months. Additional unpaid leave of up to 8 weeks is also available upon request.');
       rightPanelContent.scrollTop = rightPanelContent.scrollHeight;
       snapshotRightPanel('stage-5-assistant-response');
     },
     () => {
       removeChatMessage(msg6asst);
+      setLoopState({
+        iteration: 'Iteration 1',
+        active: 'harness',
+        model: 'Decides it needs to look this up',
+        tool: 'search_knowledge_base("parental leave policy")',
+        harness: 'Searches the company knowledge base → returns matching passages',
+        status: 'Tool result is added to the context. Loop back to the model.',
+        exited: false
+      });
     }
   );
 
@@ -927,14 +967,13 @@ Never make up information about policies.</div>
     () => {
       const sections = document.getElementById('context-sections');
       const systemSection = sections.querySelector('.context-section.system');
-      // Insert agent.md before the system section
-      const agentSection = document.createElement('div');
-      agentSection.className = 'context-section system highlight-new';
-      agentSection.style.borderColor = 'rgba(247, 120, 186, 0.4)';
-      agentSection.style.background = 'var(--pink-dim)';
-      agentSection.innerHTML = `
-        <div class="context-label" style="color: var(--pink);"><span class="dot" style="background: var(--pink);"></span> agent.md</div>
-        <div class="context-body"># Acme Corp Assistant
+      // Insert agent.md (plus a plain-English explainer) before the system section
+      const wrapper = document.createElement('div');
+      wrapper.className = 'agent-md-wrapper highlight-new';
+      wrapper.innerHTML = `
+        <div class="context-section system" style="border-color: rgba(247, 120, 186, 0.4); background: var(--pink-dim); margin-bottom: 6px;">
+          <div class="context-label" style="color: var(--pink);"><span class="dot" style="background: var(--pink);"></span> agent.md</div>
+          <div class="context-body"># Acme Corp Assistant
 
 ## Identity
 - Name: AcmeBot
@@ -947,10 +986,16 @@ Never make up information about policies.</div>
 
 ## Available Tools
 - search_handbook: Search company docs
-- create_ticket: Create HR tickets
-- bash: Run terminal commands</div>
+- create_ticket: Create HR tickets</div>
+        </div>
+        <div class="agent-md-explainer">
+          <strong>What is agent.md?</strong>
+          A plain-text file you (or your team) write — house rules for the agent.
+          Who it is, how it should behave, what it's allowed to do.
+          The agent reads it before every conversation.
+        </div>
       `;
-      sections.insertBefore(agentSection, systemSection);
+      sections.insertBefore(wrapper, systemSection);
       rightPanelContent.scrollTop = 0;
     },
     () => {
@@ -985,7 +1030,7 @@ Never make up information about policies.</div>
 
   addStep(7,
     () => {
-      setInputText('save my changes');
+      setInputText('draft a polite decline to this meeting invite');
       rightPanelTitle.textContent = 'Under the Hood — Skills';
       setRightPanelContent(`
         <div id="skill-flow"></div>
@@ -1001,7 +1046,7 @@ Never make up information about policies.</div>
   addStep(7,
     () => {
       clearInput();
-      msg7user = addChatMessage('user', 'save my changes');
+      msg7user = addChatMessage('user', 'draft a polite decline to this meeting invite');
       const flow = document.getElementById('skill-flow');
       flow.innerHTML = `
         <div class="context-section system" style="margin-bottom: 16px;">
@@ -1011,18 +1056,18 @@ The following skills are available. When the user's
 request matches a skill, call the load_skill tool
 to fetch detailed instructions.
 
-- <span style="color: var(--orange);">commit</span>: Save and commit code changes
-  Triggers: /commit, "save my changes", "commit this"
-- <span style="color: var(--orange);">review-pr</span>: Review a pull request
-  Triggers: /review-pr, "review this PR"
-- <span style="color: var(--orange);">explain</span>: Explain how code works
-  Triggers: /explain, "what does this do"</div>
+- <span style="color: var(--orange);">summarise</span>: Summarise a long document or thread
+  Triggers: /summarise, "summarise this", "tl;dr"
+- <span style="color: var(--orange);">email-draft</span>: Draft a professional email
+  Triggers: /email-draft, "draft a reply", "write an email"
+- <span style="color: var(--orange);">meeting-notes</span>: Turn raw notes into clean meeting notes
+  Triggers: /meeting-notes, "clean up my notes"</div>
         </div>
       `;
     },
     () => {
       removeChatMessage(msg7user);
-      setInputText('save my changes');
+      setInputText('draft a polite decline to this meeting invite');
       document.getElementById('skill-flow').innerHTML = '';
     }
   );
@@ -1034,10 +1079,10 @@ to fetch detailed instructions.
       flow.innerHTML += `
         <div class="context-section tool-call highlight-new">
           <div class="context-label"><span class="dot"></span> Tool Call</div>
-          <div class="context-body">load_skill("commit")
+          <div class="context-body">load_skill("email-draft")
 
-The model matched "save my changes" to the commit skill.
-This is itself a form of tool calling!</div>
+The model matched "draft a polite decline…" to the
+email-draft skill. This is itself a form of tool calling!</div>
         </div>
         <div class="skill-expansion"><div class="arrow-down">↓</div></div>
       `;
@@ -1057,19 +1102,18 @@ This is itself a form of tool calling!</div>
       flow.innerHTML += `
         <div class="context-section tool-result highlight-new">
           <div class="context-label"><span class="dot"></span> Skill Expansion → Injected into Context</div>
-          <div class="context-body">## Commit Skill Instructions
+          <div class="context-body">## Email Draft Skill
 
-1. Run \`git status\` to see all changes
-2. Run \`git diff\` to understand what changed
-3. Run \`git log --oneline -5\` for recent style
-4. Stage relevant files (not .env or secrets)
-5. Write a concise commit message:
-   - Summarise the "why" not the "what"
-   - Use conventional commit format
-6. Create the commit
-7. Show the result to the user
+1. Identify the recipient and prior context
+2. Match tone to the relationship (formal / peer / casual)
+3. Open with a brief acknowledgement
+4. State the message clearly:
+   - For a decline: thank, decline, give a brief reason
+     if appropriate, offer an alternative if there is one
+5. Close politely with a sign-off matching the tone
+6. Keep it under 120 words unless the user asks for more
 
-Never push unless explicitly asked.</div>
+Never invent meeting details or commitments.</div>
         </div>
       `;
       rightPanelContent.scrollTop = rightPanelContent.scrollHeight;
@@ -1084,14 +1128,14 @@ Never push unless explicitly asked.</div>
   let msg7asst;
   addStep(7,
     () => {
-      msg7asst = addChatMessage('assistant', 'I\'ll save your changes. Let me check what\'s been modified...\n\n<code>git status</code>\n<code>git diff</code>\n\nYou\'ve modified 3 files. I\'ll create a commit with a descriptive message.');
+      msg7asst = addChatMessage('assistant', "Here's a draft:\n\n<em>Hi [Name],</em>\n\n<em>Thanks for the invite. I'm going to have to pass on this one — my Thursday afternoon is fully booked with prep for the quarterly review. If a written update would help, I'm happy to send one through.</em>\n\n<em>Best,<br>[You]</em>");
 
       const flow = document.getElementById('skill-flow');
       flow.innerHTML += `
         <div class="context-callout" style="margin-top: 12px; border-color: var(--cyan); color: var(--cyan);">
           Skills are prompt templates loaded via tool calls.<br>
-          The user says "save my changes" → the model picks the right<br>
-          skill → detailed instructions appear → model follows them.
+          The user says "draft a polite decline…" → the model picks the<br>
+          right skill → detailed instructions appear → model follows them.
         </div>
       `;
       rightPanelContent.scrollTop = rightPanelContent.scrollHeight;
@@ -1324,7 +1368,7 @@ Never push unless explicitly asked.</div>
       leftPanel.classList.add('split');
       leftPanel.classList.remove('full');
       rightPanel.classList.add('visible');
-      chatHeaderTitle.textContent = 'Chat';
+      chatHeaderTitle.textContent = 'Microsoft 365 Copilot';
 
       chatMessages.classList.remove('hidden');
       chatInputArea.classList.remove('hidden');
