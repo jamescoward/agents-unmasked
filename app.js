@@ -788,17 +788,7 @@ I'll also mention that the historic capital of Czechoslovakia was Prague.</div>
   addStep(5,
     () => {
       hidePanelOverlay();
-      setInputText('What\'s our parental leave policy?');
-    },
-    () => { clearInput(); }
-  );
-
-  // Step: Send the question — user message appears in chat AND in the right panel context immediately
-  let msg6user;
-  addStep(5,
-    () => {
-      clearInput();
-      msg6user = addChatMessage('user', "What's our parental leave policy?");
+      setInputText("What's our parental leave policy?");
       rightPanelTitle.textContent = 'Under the Hood — RAG';
       setRightPanelContent(`
         <div id="rag-callback" class="loop-callback">↩ Remember the loop? RAG is just the model calling a search tool.</div>
@@ -811,7 +801,6 @@ I'll also mention that the historic capital of Czechoslovakia was Prague.</div>
         ${buildLoopFrame()}
         <div id="rag-result"></div>
       `);
-      // Reset loop-frame defaults for RAG
       setLoopState({
         iteration: 'Iteration 1',
         active: null,
@@ -822,9 +811,21 @@ I'll also mention that the historic capital of Czechoslovakia was Prague.</div>
       });
     },
     () => {
+      clearInput();
+      restoreRightPanel('end-of-stage-4');
+    }
+  );
+
+  // Step: Send the question — chat bubble appears (right panel was already set up)
+  let msg6user;
+  addStep(5,
+    () => {
+      clearInput();
+      msg6user = addChatMessage('user', "What's our parental leave policy?");
+    },
+    () => {
       removeChatMessage(msg6user);
       setInputText("What's our parental leave policy?");
-      restoreRightPanel('end-of-stage-4');
     }
   );
 
