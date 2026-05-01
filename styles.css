@@ -458,26 +458,7 @@ html, body {
   animation: messageIn 0.3s ease;
 }
 
-/* ── Agent Loop ── */
-.loop-step {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 12px 20px;
-  border-radius: 8px;
-  font-family: var(--font-mono);
-  font-size: 13px;
-  font-weight: 500;
-  transition: opacity 0.4s ease, transform 0.4s ease, box-shadow 0.3s ease;
-  justify-content: center;
-}
-
-.loop-step.active {
-  box-shadow: 0 0 0 2px currentColor, 0 0 24px rgba(255, 255, 255, 0.08);
-  transform: scale(1.02);
-}
-
-/* ── Persistent loop frame (Stage 4 / Stage 5) ── */
+/* ── Agent Loop (Stage 4 / Stage 5) ── */
 .loop-frame {
   display: flex;
   flex-direction: column;
@@ -486,93 +467,170 @@ html, body {
   padding: 12px 4px 8px;
 }
 
+.loop-triangle {
+  position: relative;
+  width: 320px;
+  height: 220px;
+  margin: 0 auto;
+}
+
+.loop-edges {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  overflow: visible;
+}
+
+.loop-edges .loop-edge {
+  fill: none;
+  stroke: var(--text-muted);
+  stroke-width: 2;
+  stroke-dasharray: 6 5;
+  opacity: 0.35;
+  transition: opacity 0.3s ease, stroke 0.3s ease, stroke-width 0.3s ease;
+}
+
+.loop-edges .loop-edge.flowing {
+  stroke: var(--orange);
+  opacity: 1;
+  stroke-width: 2.5;
+  animation: flowDash 1.1s linear infinite;
+}
+
+.loop-edges .loop-edge.flash {
+  animation: flashFlow 1.1s ease;
+}
+
+@keyframes flowDash {
+  to { stroke-dashoffset: -22; }
+}
+
+@keyframes flashFlow {
+  0%   { stroke: var(--text-muted); opacity: 0.35; stroke-width: 2; stroke-dashoffset: 0; }
+  40%  { stroke: var(--orange);     opacity: 1;    stroke-width: 3;   stroke-dashoffset: -22; }
+  100% { stroke: var(--text-muted); opacity: 0.5;  stroke-width: 2;   stroke-dashoffset: -44; }
+}
+
+.loop-node {
+  position: absolute;
+  width: 120px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 10px;
+  border-radius: 8px;
+  border: 1px solid;
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  font-weight: 600;
+  text-align: center;
+  transition: transform 0.3s ease, box-shadow 0.3s ease, opacity 0.3s ease, filter 0.3s ease;
+  z-index: 1;
+}
+
+.loop-node.active {
+  transform: scale(1.08);
+  box-shadow: 0 0 0 2px currentColor, 0 0 24px rgba(255, 255, 255, 0.1);
+  z-index: 2;
+}
+
+.loop-node.dim {
+  opacity: 0.5;
+  filter: saturate(0.6);
+}
+
+.loop-node.model-node {
+  background: var(--green-dim);
+  border-color: rgba(63, 185, 80, 0.4);
+  color: var(--green);
+  top: 0;
+  left: 100px;
+}
+
+.loop-node.tool-node {
+  background: var(--orange-dim);
+  border-color: rgba(210, 153, 34, 0.4);
+  color: var(--orange);
+  top: 180px;
+  left: 200px;
+}
+
+.loop-node.harness-node {
+  background: var(--cyan-dim);
+  border-color: rgba(57, 210, 192, 0.4);
+  color: var(--cyan);
+  top: 180px;
+  left: 0;
+}
+
 .loop-iteration-badge {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 2;
   font-family: var(--font-mono);
   font-size: 11px;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.6px;
   color: var(--orange);
-  background: var(--orange-dim);
+  background: var(--bg-secondary);
   border: 1px solid rgba(210, 153, 34, 0.35);
   padding: 4px 12px;
   border-radius: 999px;
   transition: color 0.3s ease, background 0.3s ease, border-color 0.3s ease;
 }
 
-.loop-row {
+.loop-detail {
   display: flex;
-  align-items: stretch;
+  flex-direction: column;
   gap: 4px;
+  width: 100%;
+  max-width: 360px;
+  margin-top: 4px;
 }
 
-.loop-stack {
+.loop-detail-line {
   display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0;
+  align-items: baseline;
+  gap: 8px;
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  line-height: 1.45;
+  color: var(--text-secondary);
+  padding: 6px 10px;
+  border-radius: 6px;
+  background: var(--bg-tertiary);
+  border-left: 3px solid transparent;
+  transition: border-color 0.3s ease, opacity 0.3s ease, filter 0.3s ease;
+  opacity: 0.6;
 }
 
-.loop-stack .loop-step {
-  /* Persistent bubbles — always visible, content updates in place */
+.loop-detail-line strong {
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.loop-detail-line.active {
   opacity: 1;
-  transform: none;
-  min-width: 240px;
-  max-width: 280px;
-  flex-direction: column;
-  align-items: stretch;
-  gap: 2px;
-  padding: 10px 14px;
 }
 
-.loop-stack .loop-step.dim {
-  opacity: 0.45;
+.loop-detail-line.dim {
+  opacity: 0.35;
   filter: saturate(0.6);
 }
 
-.loop-step-title {
-  font-family: var(--font-mono);
-  font-size: 12px;
-  font-weight: 600;
-  letter-spacing: 0.3px;
-}
+.loop-detail-line.model-line { border-left-color: var(--green); }
+.loop-detail-line.tool-line  { border-left-color: var(--orange); }
+.loop-detail-line.harness-line { border-left-color: var(--cyan); }
 
-.loop-step-detail {
-  font-family: var(--font-mono);
-  font-size: 11.5px;
-  font-weight: 400;
-  color: var(--text-secondary);
-  line-height: 1.45;
-  transition: opacity 0.2s ease;
-}
-
-.loop-arrow-label {
-  font-family: var(--font-mono);
-  font-size: 10px;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  color: var(--text-muted);
-  margin-left: 4px;
-}
-
-.loop-back-arrow {
-  width: 56px;
-  align-self: stretch;
-  color: var(--text-muted);
-  flex-shrink: 0;
-  transition: color 0.3s ease;
-}
-
-.loop-back-arrow.pulse {
-  color: var(--orange);
-  animation: loopPulse 1.1s ease;
-}
-
-@keyframes loopPulse {
-  0%   { color: var(--text-muted); transform: scale(1); }
-  35%  { color: var(--orange); transform: scale(1.05); }
-  100% { color: var(--text-muted); transform: scale(1); }
-}
+.loop-detail-line.model-line strong { color: var(--green); }
+.loop-detail-line.tool-line strong  { color: var(--orange); }
+.loop-detail-line.harness-line strong { color: var(--cyan); }
 
 .loop-status {
   font-family: var(--font-sans);
@@ -581,7 +639,7 @@ html, body {
   font-style: italic;
   text-align: center;
   min-height: 18px;
-  max-width: 320px;
+  max-width: 360px;
   line-height: 1.45;
 }
 

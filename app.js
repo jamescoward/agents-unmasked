@@ -563,28 +563,26 @@ I'll also mention that the historic capital of Czechoslovakia was Prague.</div>
   function buildLoopFrame() {
     return `
       <div class="loop-frame">
-        <div class="loop-iteration-badge" id="loop-badge">Iteration 1</div>
-        <div class="loop-row">
-          <div class="loop-stack">
-            <div class="loop-step model-step" id="ls-model">
-              <div class="loop-step-title">🤖 Model</div>
-              <div class="loop-step-detail" id="ls-model-detail">Reads the whole conversation</div>
-            </div>
-            <div class="loop-arrow">↓ <span class="loop-arrow-label">tool_use</span></div>
-            <div class="loop-step tool-step" id="ls-tool">
-              <div class="loop-step-title">🔧 Tool call</div>
-              <div class="loop-step-detail" id="ls-tool-detail">(waiting)</div>
-            </div>
-            <div class="loop-arrow">↓</div>
-            <div class="loop-step harness-step" id="ls-harness">
-              <div class="loop-step-title">⚙️ Harness</div>
-              <div class="loop-step-detail" id="ls-harness-detail">(waiting)</div>
-            </div>
-          </div>
-          <svg class="loop-back-arrow" id="loop-back-arrow" viewBox="0 0 60 200" preserveAspectRatio="none" aria-hidden="true">
-            <path d="M 4 196 Q 55 196 55 100 Q 55 4 4 4" stroke="currentColor" stroke-width="2" stroke-dasharray="5 4" fill="none" />
-            <polygon points="0 4, 8 0, 8 8" fill="currentColor" />
+        <div class="loop-triangle">
+          <svg class="loop-edges" viewBox="0 0 320 220" aria-hidden="true">
+            <defs>
+              <marker id="loop-arrow-head" markerUnits="strokeWidth" markerWidth="4" markerHeight="4" refX="3.2" refY="2" orient="auto">
+                <path d="M0,0 L4,2 L0,4 z" fill="context-stroke" />
+              </marker>
+            </defs>
+            <path id="edge-mt" class="loop-edge" d="M 220,20 C 320,30 320,170 260,178" marker-end="url(#loop-arrow-head)" />
+            <path id="edge-th" class="loop-edge" d="M 198,200 Q 160,228 122,200" marker-end="url(#loop-arrow-head)" />
+            <path id="edge-hm" class="loop-edge" d="M 60,178 C 0,170 0,30 100,18" marker-end="url(#loop-arrow-head)" />
           </svg>
+          <div class="loop-iteration-badge" id="loop-badge">Iteration 1</div>
+          <div class="loop-node model-node" id="ls-model">🤖 Model</div>
+          <div class="loop-node tool-node" id="ls-tool">🔧 Tool call</div>
+          <div class="loop-node harness-node" id="ls-harness">⚙️ Harness</div>
+        </div>
+        <div class="loop-detail">
+          <div class="loop-detail-line model-line" id="ld-model"><strong>🤖 Model</strong><span id="ld-model-text">Reads the whole conversation</span></div>
+          <div class="loop-detail-line tool-line" id="ld-tool"><strong>🔧 Tool call</strong><span id="ld-tool-text">(waiting)</span></div>
+          <div class="loop-detail-line harness-line" id="ld-harness"><strong>⚙️ Harness</strong><span id="ld-harness-text">(waiting)</span></div>
         </div>
         <div class="loop-status" id="loop-status">The harness wraps the model and runs tools on its behalf</div>
       </div>
@@ -593,36 +591,55 @@ I'll also mention that the historic capital of Czechoslovakia was Prague.</div>
 
   function setLoopState({ iteration, model, tool, harness, status, active, pulseBack, exited }) {
     const badge = document.getElementById('loop-badge');
-    const modelDetail = document.getElementById('ls-model-detail');
-    const toolDetail = document.getElementById('ls-tool-detail');
-    const harnessDetail = document.getElementById('ls-harness-detail');
-    const status_ = document.getElementById('loop-status');
-    const modelStep = document.getElementById('ls-model');
-    const toolStep = document.getElementById('ls-tool');
-    const harnessStep = document.getElementById('ls-harness');
-    const backArrow = document.getElementById('loop-back-arrow');
-
     if (badge && iteration !== undefined) badge.textContent = iteration;
-    if (modelDetail && model !== undefined) modelDetail.innerHTML = model;
-    if (toolDetail && tool !== undefined) toolDetail.innerHTML = tool;
-    if (harnessDetail && harness !== undefined) harnessDetail.innerHTML = harness;
-    if (status_ && status !== undefined) status_.innerHTML = status;
 
-    [modelStep, toolStep, harnessStep].forEach(el => el && el.classList.remove('active'));
-    if (active === 'model' && modelStep) modelStep.classList.add('active');
-    if (active === 'tool' && toolStep) toolStep.classList.add('active');
-    if (active === 'harness' && harnessStep) harnessStep.classList.add('active');
-
-    if (backArrow) {
-      backArrow.classList.remove('pulse');
-      if (pulseBack) {
-        // restart animation
-        void backArrow.offsetWidth;
-        backArrow.classList.add('pulse');
-      }
+    if (model !== undefined) {
+      const el = document.getElementById('ld-model-text');
+      if (el) el.innerHTML = model;
+    }
+    if (tool !== undefined) {
+      const el = document.getElementById('ld-tool-text');
+      if (el) el.innerHTML = tool;
+    }
+    if (harness !== undefined) {
+      const el = document.getElementById('ld-harness-text');
+      if (el) el.innerHTML = harness;
+    }
+    if (status !== undefined) {
+      const el = document.getElementById('loop-status');
+      if (el) el.innerHTML = status;
     }
 
-    [modelStep, toolStep, harnessStep].forEach(el => el && el.classList.toggle('dim', !!exited));
+    const nodeIds = ['ls-model', 'ls-tool', 'ls-harness'];
+    const lineIds = ['ld-model', 'ld-tool', 'ld-harness'];
+    nodeIds.forEach(id => document.getElementById(id)?.classList.remove('active'));
+    lineIds.forEach(id => document.getElementById(id)?.classList.remove('active'));
+
+    const activeMap = { model: 0, tool: 1, harness: 2 };
+    if (active in activeMap) {
+      document.getElementById(nodeIds[activeMap[active]])?.classList.add('active');
+      document.getElementById(lineIds[activeMap[active]])?.classList.add('active');
+    }
+
+    const edgeMT = document.getElementById('edge-mt');
+    const edgeTH = document.getElementById('edge-th');
+    const edgeHM = document.getElementById('edge-hm');
+    [edgeMT, edgeTH, edgeHM].forEach(e => e && e.classList.remove('flowing', 'flash'));
+    // Model just emitted tool_use → MT edge flows toward the lit-up Tool node
+    if (active === 'tool' && edgeMT) edgeMT.classList.add('flowing');
+    // Harness picked up the tool_use → TH edge flows toward the lit-up Harness node
+    if (active === 'harness' && edgeTH) edgeTH.classList.add('flowing');
+
+    if (pulseBack && edgeHM) {
+      void edgeHM.offsetWidth;
+      edgeHM.classList.add('flash');
+    }
+
+    // Exited state: dim the tool/harness, keep model glowing as the final responder
+    document.getElementById('ls-tool')?.classList.toggle('dim', !!exited);
+    document.getElementById('ls-harness')?.classList.toggle('dim', !!exited);
+    document.getElementById('ld-tool')?.classList.toggle('dim', !!exited);
+    document.getElementById('ld-harness')?.classList.toggle('dim', !!exited);
   }
 
   // Step: User types question
