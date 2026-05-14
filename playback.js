@@ -290,9 +290,9 @@ const Playback = (() => {
       _events = [];
     }
 
-    // Register one step per event (appended after the stage 9 entry step)
+    // Register one step per event (appended after the stage 10 entry step)
     for (let i = 0; i < _events.length; i++) {
-      addStep(9, () => showNext(), () => showPrev());
+      addStep(10, () => showNext(), () => showPrev());
     }
 
     return _events.length;

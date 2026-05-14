@@ -28,6 +28,7 @@ const panelSnapshots = {};
 
 const STAGE_NAMES = [
   '',
+  'Two Key Terms',
   'The Chat Interface',
   'The Context Window',
   'Reasoning Models',
@@ -39,7 +40,7 @@ const STAGE_NAMES = [
   'Build Playback'
 ];
 
-const TOTAL_STAGES = 9;
+const TOTAL_STAGES = 10;
 
 // ── Utility functions ──
 
@@ -158,35 +159,131 @@ function addStep(stage, forward, backward) {
 function defineSteps() {
 
   // ════════════════════════════════════════
-  // STAGE 1: The Chat Interface
+  // STAGE 1: Two Key Terms (Glossary)
   // ════════════════════════════════════════
+
+  function renderTitleSlide() {
+    rightPanelTitle.textContent = '';
+    setRightPanelContent(`
+      <div class="title-slide">
+        <h1>Agents Unmasked</h1>
+        <div class="subtitle">How LLM agents actually work under the hood</div>
+        <div class="author">James Coward</div>
+      </div>
+    `);
+  }
+
+  const MODEL_CARD_HTML = `
+    <div class="glossary-card glossary-model">
+      <div class="glossary-card-header">
+        <div class="glossary-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M12 5a3 3 0 1 0-5.997.125 4 4 0 0 0-2.526 5.77 4 4 0 0 0 .556 6.588A4 4 0 1 0 12 18Z"/>
+            <path d="M12 5a3 3 0 1 1 5.997.125 4 4 0 0 1 2.526 5.77 4 4 0 0 1-.556 6.588A4 4 0 1 1 12 18Z"/>
+            <path d="M15 13a4.5 4.5 0 0 1-3-4 4.5 4.5 0 0 1-3 4"/>
+            <path d="M17.6 6.5a3 3 0 0 0 .4-1.375"/>
+            <path d="M6 5.125A3 3 0 0 0 6.4 6.5"/>
+            <path d="M3.5 10.9a4 4 0 0 1 .585-.396"/>
+            <path d="M19.9 10.5a4 4 0 0 1 .585.396"/>
+            <path d="M6 18a4 4 0 0 1-1.967-.516"/>
+            <path d="M20 17.5a4 4 0 0 1-1.967.5"/>
+          </svg>
+        </div>
+        <div class="glossary-card-titles">
+          <div class="glossary-term">Model</div>
+          <div class="glossary-examples">Claude, GPT, Gemini…</div>
+        </div>
+      </div>
+      <div class="glossary-definition">
+        A text-in, text-out function running on someone else’s servers.
+        It can’t do anything on its own — the brains of an agent, but a brain in a jar.
+      </div>
+    </div>
+  `;
+
+  const HARNESS_CARD_HTML = `
+    <div class="glossary-card glossary-harness">
+      <div class="glossary-card-header">
+        <div class="glossary-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+            <circle cx="12" cy="7" r="4"/>
+          </svg>
+        </div>
+        <div class="glossary-card-titles">
+          <div class="glossary-term">Harness</div>
+          <div class="glossary-examples">Claude Code, Cursor, ChatGPT app…</div>
+        </div>
+      </div>
+      <div class="glossary-definition">
+        The body around the brain. Software running on your computer that lets the
+        model see and act in the world.
+      </div>
+    </div>
+  `;
+
+  function renderGlossary({ showHarness }) {
+    rightPanelTitle.textContent = 'Two terms to know';
+    setRightPanelContent(`
+      <div class="glossary-stage">
+        <div class="glossary-intro">Before we start — two terms you’ll hear a lot.</div>
+        <div class="glossary-cards">
+          ${MODEL_CARD_HTML}
+          ${showHarness ? HARNESS_CARD_HTML : ''}
+        </div>
+      </div>
+    `);
+  }
 
   // Step: Title slide
   addStep(1,
     () => {
       clearInput();
       chatHeaderTitle.textContent = 'Copilot Chat';
-      rightPanelTitle.textContent = '';
-      setRightPanelContent(`
-        <div class="title-slide">
-          <h1>Agents Unmasked</h1>
-          <div class="subtitle">How LLM agents actually work under the hood</div>
-          <div class="author">James Coward</div>
-        </div>
-      `);
+      renderTitleSlide();
     },
     () => {}
   );
 
-  // Step: User types question in input
+  // Step: Glossary appears with the model card
   addStep(1,
+    () => { renderGlossary({ showHarness: false }); },
+    () => { renderTitleSlide(); }
+  );
+
+  // Step: Harness card joins
+  addStep(1,
+    () => {
+      const cards = rightPanelContent.querySelector('.glossary-cards');
+      if (cards && !cards.querySelector('.glossary-harness')) {
+        cards.insertAdjacentHTML('beforeend', HARNESS_CARD_HTML);
+      } else if (!cards) {
+        renderGlossary({ showHarness: true });
+      }
+    },
+    () => {
+      const harness = rightPanelContent.querySelector('.glossary-harness');
+      if (harness) {
+        harness.remove();
+      } else {
+        renderGlossary({ showHarness: false });
+      }
+    }
+  );
+
+  // ════════════════════════════════════════
+  // STAGE 2: The Chat Interface
+  // ════════════════════════════════════════
+
+  // Step: User types question in input
+  addStep(2,
     () => { setInputText('What is the capital of France?'); },
     () => { clearInput(); }
   );
 
   // Step: User "sends" the message
   let msg1user;
-  addStep(1,
+  addStep(2,
     () => {
       clearInput();
       msg1user = addChatMessage('user', 'What is the capital of France?');
@@ -199,14 +296,14 @@ function defineSteps() {
 
   // Step: Typing indicator
   let typing1;
-  addStep(1,
+  addStep(2,
     () => { typing1 = showTypingIndicator(); },
     () => { removeTypingIndicator(); }
   );
 
   // Step: Assistant responds
   let msg1asst;
-  addStep(1,
+  addStep(2,
     () => {
       removeTypingIndicator();
       msg1asst = addChatMessage('assistant', 'The capital of France is Paris. It\'s the largest city in France and serves as the country\'s political, economic, and cultural centre.');
@@ -218,14 +315,14 @@ function defineSteps() {
   );
 
   // Step: User types second question
-  addStep(1,
+  addStep(2,
     () => { setInputText('What about Germany?'); },
     () => { clearInput(); }
   );
 
   // Step: User sends second message
   let msg2user;
-  addStep(1,
+  addStep(2,
     () => {
       clearInput();
       msg2user = addChatMessage('user', 'What about Germany?');
@@ -237,14 +334,14 @@ function defineSteps() {
   );
 
   // Step: Typing indicator
-  addStep(1,
+  addStep(2,
     () => { showTypingIndicator(); },
     () => { removeTypingIndicator(); }
   );
 
   // Step: Assistant responds
   let msg2asst;
-  addStep(1,
+  addStep(2,
     () => {
       removeTypingIndicator();
       msg2asst = addChatMessage('assistant', 'The capital of Germany is Berlin. It\'s the largest city in Germany and has a rich history, particularly during the Cold War when it was divided into East and West Berlin.');
@@ -256,7 +353,7 @@ function defineSteps() {
   );
 
   // ════════════════════════════════════════
-  // STAGE 2: The Context Window
+  // STAGE 3: The Context Window
   // ════════════════════════════════════════
 
   // Helper to set up the context panel scaffold
@@ -301,28 +398,17 @@ function defineSteps() {
     }
   }
 
-  function restoreTitleSlide() {
-    rightPanelTitle.textContent = '';
-    setRightPanelContent(`
-      <div class="title-slide">
-        <h1>Agents Unmasked</h1>
-        <div class="subtitle">How LLM agents actually work under the hood</div>
-        <div class="author">James Coward</div>
-      </div>
-    `);
-  }
-
   // Step: Transition — show the context panel with just the first user message
-  addStep(2,
+  addStep(3,
     () => {
       initContextPanel(2);
       appendContextSection('user-msg', 'User', 'What is the capital of France?');
     },
-    () => { restoreTitleSlide(); }
+    () => { renderGlossary({ showHarness: true }); }
   );
 
   // Step: First assistant response appears in context
-  addStep(2,
+  addStep(3,
     () => {
       appendContextSection('assistant-msg', 'Assistant',
         "The capital of France is Paris. It's the largest city in France and serves as the country's political, economic, and cultural centre.");
@@ -332,7 +418,7 @@ function defineSteps() {
   );
 
   // Step: Second user message in context
-  addStep(2,
+  addStep(3,
     () => {
       appendContextSection('user-msg', 'User', 'What about Germany?');
       updateContextBar(5);
@@ -341,7 +427,7 @@ function defineSteps() {
   );
 
   // Step: Second assistant response in context
-  addStep(2,
+  addStep(3,
     () => {
       appendContextSection('assistant-msg', 'Assistant',
         "The capital of Germany is Berlin. It's the largest city in Germany and has a rich history, particularly during the Cold War when it was divided into East and West Berlin.");
@@ -351,14 +437,14 @@ function defineSteps() {
   );
 
   // Step: User types a new question
-  addStep(2,
+  addStep(3,
     () => { setInputText('And Spain?'); },
     () => { clearInput(); }
   );
 
   // Step: User sends — appears in both chat and context simultaneously
   let msg3user;
-  addStep(2,
+  addStep(3,
     () => {
       clearInput();
       msg3user = addChatMessage('user', 'And Spain?');
@@ -374,14 +460,14 @@ function defineSteps() {
   );
 
   // Step: Typing indicator
-  addStep(2,
+  addStep(3,
     () => { showTypingIndicator(); },
     () => { removeTypingIndicator(); }
   );
 
   // Step: Assistant responds — both chat and context
   let msg3asst;
-  addStep(2,
+  addStep(3,
     () => {
       removeTypingIndicator();
       msg3asst = addChatMessage('assistant', 'The capital of Spain is Madrid. It\'s located in the centre of the Iberian Peninsula and is known for its rich cultural heritage, including the Prado Museum and the Royal Palace.');
@@ -398,12 +484,12 @@ function defineSteps() {
   );
 
   // Step: The reveal — "The entire conversation is sent every time"
-  addStep(2,
+  addStep(3,
     () => {
       showPanelOverlay('var(--orange)', 'var(--orange-dim)',
         `The model is stateless.<br>The <strong>whole conversation</strong> is sent on every request.`
       );
-      snapshotRightPanel('end-of-stage-2');
+      snapshotRightPanel('end-of-stage-3');
     },
     () => {
       hidePanelOverlay();
@@ -411,11 +497,11 @@ function defineSteps() {
   );
 
   // ════════════════════════════════════════
-  // STAGE 3: Reasoning Models (Thinking)
+  // STAGE 4: Reasoning Models (Thinking)
   // ════════════════════════════════════════
 
   // Step: New question in chat
-  addStep(3,
+  addStep(4,
     () => {
       hidePanelOverlay();
       setInputText('What is the capital of Czechoslovakia?');
@@ -424,7 +510,7 @@ function defineSteps() {
   );
 
   let msg4user;
-  addStep(3,
+  addStep(4,
     () => {
       clearInput();
       msg4user = addChatMessage('user', 'What is the capital of Czechoslovakia?');
@@ -459,12 +545,12 @@ function defineSteps() {
     () => {
       removeChatMessage(msg4user);
       setInputText('What is the capital of Czechoslovakia?');
-      restoreRightPanel('end-of-stage-2');
+      restoreRightPanel('end-of-stage-3');
     }
   );
 
   // Step: Show thinking block in response
-  addStep(3,
+  addStep(4,
     () => {
       const sections = document.getElementById('context-sections');
       if (sections) {
@@ -501,7 +587,7 @@ I'll also mention that the historic capital of Czechoslovakia was Prague.</div>
 
   // Step: Assistant responds (only final answer shown in chat)
   let msg4asst;
-  addStep(3,
+  addStep(4,
     () => {
       msg4asst = addChatMessage('assistant', 'Czechoslovakia dissolved in 1993. The historic capital was <strong>Prague</strong>, which is now the capital of the Czech Republic (Czechia). The capital of Slovakia is <strong>Bratislava</strong>.');
       const sections = document.getElementById('context-sections');
@@ -533,7 +619,7 @@ I'll also mention that the historic capital of Czechoslovakia was Prague.</div>
   );
 
   // Step: Reasoning callout
-  addStep(3,
+  addStep(4,
     () => {
       const sections = document.getElementById('context-sections');
       if (sections) {
@@ -545,7 +631,7 @@ I'll also mention that the historic capital of Czechoslovakia was Prague.</div>
         sections.appendChild(callout);
         rightPanelContent.scrollTop = rightPanelContent.scrollHeight;
       }
-      snapshotRightPanel('end-of-stage-3');
+      snapshotRightPanel('end-of-stage-4');
     },
     () => {
       const sections = document.getElementById('context-sections');
@@ -556,7 +642,7 @@ I'll also mention that the historic capital of Czechoslovakia was Prague.</div>
   );
 
   // ════════════════════════════════════════
-  // STAGE 4: Tool Calling (The Agent Loop)
+  // STAGE 5: Tool Calling (The Agent Loop)
   // ════════════════════════════════════════
 
   // Helpers shared by Stage 4 and Stage 5 (RAG is the same loop with a different tool)
@@ -626,7 +712,7 @@ I'll also mention that the historic capital of Czechoslovakia was Prague.</div>
   }
 
   // Step: User types question
-  addStep(4,
+  addStep(5,
     () => {
       chatHeaderTitle.textContent = 'Microsoft 365 Copilot';
       setInputText('Save these capitals to my notes');
@@ -639,7 +725,7 @@ I'll also mention that the historic capital of Czechoslovakia was Prague.</div>
 
   // Step: User sends + scaffold the loop diagram
   let msg5user;
-  addStep(4,
+  addStep(5,
     () => {
       clearInput();
       msg5user = addChatMessage('user', 'Save these capitals to my notes');
@@ -649,12 +735,12 @@ I'll also mention that the historic capital of Czechoslovakia was Prague.</div>
     () => {
       removeChatMessage(msg5user);
       setInputText('Save these capitals to my notes');
-      restoreRightPanel('end-of-stage-3');
+      restoreRightPanel('end-of-stage-4');
     }
   );
 
   // Step: Iteration 1 — model decides to read the file
-  addStep(4,
+  addStep(5,
     () => {
       setLoopState({
         iteration: 'Iteration 1',
@@ -678,7 +764,7 @@ I'll also mention that the historic capital of Czechoslovakia was Prague.</div>
   );
 
   // Step: Iteration 1 — harness runs the read, loop pulses back to top
-  addStep(4,
+  addStep(5,
     () => {
       setLoopState({
         active: 'harness',
@@ -697,7 +783,7 @@ I'll also mention that the historic capital of Czechoslovakia was Prague.</div>
   );
 
   // Step: Iteration 2 — model decides to write
-  addStep(4,
+  addStep(5,
     () => {
       setLoopState({
         iteration: 'Iteration 2',
@@ -721,7 +807,7 @@ I'll also mention that the historic capital of Czechoslovakia was Prague.</div>
   );
 
   // Step: Iteration 2 — harness writes, loop pulses back
-  addStep(4,
+  addStep(5,
     () => {
       setLoopState({
         active: 'harness',
@@ -741,7 +827,7 @@ I'll also mention that the historic capital of Czechoslovakia was Prague.</div>
 
   // Step: Loop exits — model returns text, no more tool calls
   let msg5asst;
-  addStep(4,
+  addStep(5,
     () => {
       setLoopState({
         iteration: 'Loop exits',
@@ -769,12 +855,12 @@ I'll also mention that the historic capital of Czechoslovakia was Prague.</div>
   );
 
   // Step: The reveal — "An agent is just this loop"
-  addStep(4,
+  addStep(5,
     () => {
       showPanelOverlay('var(--orange)', 'var(--orange-dim)',
         `An "agent" is just this loop running until the model stops calling tools.<br>That's it.`
       );
-      snapshotRightPanel('end-of-stage-4');
+      snapshotRightPanel('end-of-stage-5');
     },
     () => {
       hidePanelOverlay();
@@ -782,10 +868,10 @@ I'll also mention that the historic capital of Czechoslovakia was Prague.</div>
   );
 
   // ════════════════════════════════════════
-  // STAGE 5: RAG
+  // STAGE 6: RAG
   // ════════════════════════════════════════
 
-  addStep(5,
+  addStep(6,
     () => {
       hidePanelOverlay();
       setInputText("What's our parental leave policy?");
@@ -812,13 +898,13 @@ I'll also mention that the historic capital of Czechoslovakia was Prague.</div>
     },
     () => {
       clearInput();
-      restoreRightPanel('end-of-stage-4');
+      restoreRightPanel('end-of-stage-5');
     }
   );
 
   // Step: Send the question — chat bubble appears (right panel was already set up)
   let msg6user;
-  addStep(5,
+  addStep(6,
     () => {
       clearInput();
       msg6user = addChatMessage('user', "What's our parental leave policy?");
@@ -830,7 +916,7 @@ I'll also mention that the historic capital of Czechoslovakia was Prague.</div>
   );
 
   // Step: Iteration 1 — model decides to search the knowledge base
-  addStep(5,
+  addStep(6,
     () => {
       setLoopState({
         active: 'tool',
@@ -852,7 +938,7 @@ I'll also mention that the historic capital of Czechoslovakia was Prague.</div>
   );
 
   // Step: Iteration 1 — harness queries the company knowledge base, loop pulses back
-  addStep(5,
+  addStep(6,
     () => {
       setLoopState({
         active: 'harness',
@@ -885,7 +971,7 @@ I'll also mention that the historic capital of Czechoslovakia was Prague.</div>
 
   // Step: Iteration 2 — model uses the passages to answer (loop exits), assistant message appears
   let msg6asst;
-  addStep(5,
+  addStep(6,
     () => {
       setLoopState({
         iteration: 'Loop exits',
@@ -898,7 +984,7 @@ I'll also mention that the historic capital of Czechoslovakia was Prague.</div>
       });
       msg6asst = addChatMessage('assistant', 'Our parental leave policy offers <strong>16 weeks of paid leave</strong> for all employees, regardless of gender or tenure. You can take it in continuous blocks or split it within the first 12 months. Additional unpaid leave of up to 8 weeks is also available upon request.');
       rightPanelContent.scrollTop = rightPanelContent.scrollHeight;
-      snapshotRightPanel('stage-5-assistant-response');
+      snapshotRightPanel('stage-6-assistant-response');
     },
     () => {
       removeChatMessage(msg6asst);
@@ -915,12 +1001,12 @@ I'll also mention that the historic capital of Czechoslovakia was Prague.</div>
   );
 
   // Step: The reveal
-  addStep(5,
+  addStep(6,
     () => {
       showPanelOverlay('var(--yellow)', 'var(--yellow-dim)',
         `The model isn't learning anything. What looks like institutional knowledge is just a search result injected into the context.`
       );
-      snapshotRightPanel('end-of-stage-5');
+      snapshotRightPanel('end-of-stage-6');
     },
     () => {
       hidePanelOverlay();
@@ -928,10 +1014,10 @@ I'll also mention that the historic capital of Czechoslovakia was Prague.</div>
   );
 
   // ════════════════════════════════════════
-  // STAGE 6: System Prompts & agent.md
+  // STAGE 7: System Prompts & agent.md
   // ════════════════════════════════════════
 
-  addStep(6,
+  addStep(7,
     () => {
       hidePanelOverlay();
       rightPanelTitle.textContent = 'Under the Hood — System Prompt';
@@ -959,12 +1045,12 @@ Never make up information about policies.</div>
       `);
     },
     () => {
-      restoreRightPanel('end-of-stage-5');
+      restoreRightPanel('end-of-stage-6');
     }
   );
 
   // Step: Show agent.md being loaded
-  addStep(6,
+  addStep(7,
     () => {
       const sections = document.getElementById('context-sections');
       const systemSection = sections.querySelector('.context-section.system');
@@ -1008,7 +1094,7 @@ Never make up information about policies.</div>
   );
 
   // Step: Annotation
-  addStep(6,
+  addStep(7,
     () => {
       const sections = document.getElementById('context-sections');
       sections.innerHTML += `
@@ -1017,7 +1103,7 @@ Never make up information about policies.</div>
         </div>
       `;
       rightPanelContent.scrollTop = rightPanelContent.scrollHeight;
-      snapshotRightPanel('end-of-stage-6');
+      snapshotRightPanel('end-of-stage-7');
     },
     () => {
       const sections = document.getElementById('context-sections');
@@ -1026,10 +1112,10 @@ Never make up information about policies.</div>
   );
 
   // ════════════════════════════════════════
-  // STAGE 7: Skills / Slash Commands
+  // STAGE 8: Skills / Slash Commands
   // ════════════════════════════════════════
 
-  addStep(7,
+  addStep(8,
     () => {
       setInputText('draft a polite decline to this meeting invite');
       rightPanelTitle.textContent = 'Under the Hood — Skills';
@@ -1039,12 +1125,12 @@ Never make up information about policies.</div>
     },
     () => {
       clearInput();
-      restoreRightPanel('end-of-stage-6');
+      restoreRightPanel('end-of-stage-7');
     }
   );
 
   let msg7user;
-  addStep(7,
+  addStep(8,
     () => {
       clearInput();
       msg7user = addChatMessage('user', 'draft a polite decline to this meeting invite');
@@ -1074,7 +1160,7 @@ to fetch detailed instructions.
   );
 
   // Step: Model matches intent → tool call
-  addStep(7,
+  addStep(8,
     () => {
       const flow = document.getElementById('skill-flow');
       flow.innerHTML += `
@@ -1097,7 +1183,7 @@ email-draft skill. This is itself a form of tool calling!</div>
   );
 
   // Step: Skill template expands into context
-  addStep(7,
+  addStep(8,
     () => {
       const flow = document.getElementById('skill-flow');
       flow.innerHTML += `
@@ -1127,7 +1213,7 @@ Never invent meeting details or commitments.</div>
 
   // Step: Show the assistant acting on it
   let msg7asst;
-  addStep(7,
+  addStep(8,
     () => {
       msg7asst = addChatMessage('assistant', "Here's a draft:\n\n<em>Hi [Name],</em>\n\n<em>Thanks for the invite. I'm going to have to pass on this one — my Thursday afternoon is fully booked with prep for the quarterly review. If a written update would help, I'm happy to send one through.</em>\n\n<em>Best,<br>[You]</em>");
 
@@ -1140,7 +1226,7 @@ Never invent meeting details or commitments.</div>
         </div>
       `;
       rightPanelContent.scrollTop = rightPanelContent.scrollHeight;
-      snapshotRightPanel('end-of-stage-7');
+      snapshotRightPanel('end-of-stage-8');
     },
     () => {
       removeChatMessage(msg7asst);
@@ -1150,10 +1236,10 @@ Never invent meeting details or commitments.</div>
   );
 
   // ════════════════════════════════════════
-  // STAGE 8: Conclusion
+  // STAGE 9: Conclusion
   // ════════════════════════════════════════
 
-  addStep(8,
+  addStep(9,
     () => {
       rightPanelTitle.textContent = 'The Full Picture';
       setRightPanelContent(`
@@ -1163,12 +1249,12 @@ Never invent meeting details or commitments.</div>
       `);
     },
     () => {
-      restoreRightPanel('end-of-stage-7');
+      restoreRightPanel('end-of-stage-8');
     }
   );
 
   // Step: Stack up all the layers
-  addStep(8,
+  addStep(9,
     () => {
       const fp = document.getElementById('full-picture');
       fp.innerHTML += `
@@ -1184,7 +1270,7 @@ Never invent meeting details or commitments.</div>
     }
   );
 
-  addStep(8,
+  addStep(9,
     () => {
       const fp = document.getElementById('full-picture');
       fp.innerHTML += `
@@ -1200,7 +1286,7 @@ Never invent meeting details or commitments.</div>
     }
   );
 
-  addStep(8,
+  addStep(9,
     () => {
       const fp = document.getElementById('full-picture');
       fp.innerHTML += `
@@ -1216,7 +1302,7 @@ Never invent meeting details or commitments.</div>
     }
   );
 
-  addStep(8,
+  addStep(9,
     () => {
       const fp = document.getElementById('full-picture');
       fp.innerHTML += `
@@ -1232,7 +1318,7 @@ Never invent meeting details or commitments.</div>
     }
   );
 
-  addStep(8,
+  addStep(9,
     () => {
       const fp = document.getElementById('full-picture');
       fp.innerHTML += `
@@ -1248,7 +1334,7 @@ Never invent meeting details or commitments.</div>
     }
   );
 
-  addStep(8,
+  addStep(9,
     () => {
       const fp = document.getElementById('full-picture');
       fp.innerHTML += `
@@ -1264,7 +1350,7 @@ Never invent meeting details or commitments.</div>
     }
   );
 
-  addStep(8,
+  addStep(9,
     () => {
       const fp = document.getElementById('full-picture');
       fp.innerHTML += `
@@ -1281,7 +1367,7 @@ Never invent meeting details or commitments.</div>
   );
 
   // Step: The reveal
-  addStep(8,
+  addStep(9,
     () => {
       const fp = document.getElementById('full-picture');
       fp.innerHTML += `
@@ -1298,7 +1384,7 @@ Never invent meeting details or commitments.</div>
   );
 
   // Step: Show the prompts used to build this
-  addStep(8,
+  addStep(9,
     () => {
       const fp = document.getElementById('full-picture');
       fp.innerHTML += `
@@ -1325,12 +1411,12 @@ Never invent meeting details or commitments.</div>
   );
 
   // ════════════════════════════════════════
-  // STAGE 9: Build Playback
+  // STAGE 10: Build Playback
   // ════════════════════════════════════════
 
   // Entry step: switch layout to full-width playback mode.
   // The individual event steps are appended dynamically by Playback.load().
-  addStep(9,
+  addStep(10,
     () => {
       // Expand left panel, hide right panel
       leftPanel.classList.remove('split');

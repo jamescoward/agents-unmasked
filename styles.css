@@ -900,6 +900,115 @@ html, body {
   color: var(--text-muted);
 }
 
+/* ── Glossary (Stage 1) ── */
+.glossary-stage {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: 32px 36px;
+  gap: 22px;
+  animation: fadeIn 0.4s ease;
+}
+
+.glossary-intro {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--text-secondary);
+  letter-spacing: 0.2px;
+}
+
+.glossary-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  flex: 1;
+  min-height: 0;
+}
+
+.glossary-card {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 20px 22px;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  border-left-width: 3px;
+  animation: glossaryCardIn 0.4s ease both;
+}
+
+@keyframes glossaryCardIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.glossary-card.glossary-model {
+  border-left-color: var(--purple);
+}
+
+.glossary-card.glossary-harness {
+  border-left-color: var(--orange);
+}
+
+.glossary-card-header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.glossary-icon {
+  flex-shrink: 0;
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+}
+
+.glossary-model .glossary-icon {
+  background: var(--purple-dim);
+  color: var(--purple);
+}
+
+.glossary-harness .glossary-icon {
+  background: var(--orange-dim);
+  color: var(--orange);
+}
+
+.glossary-icon svg {
+  width: 26px;
+  height: 26px;
+}
+
+.glossary-card-titles {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.glossary-term {
+  font-family: var(--font-sans);
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--text-primary);
+  line-height: 1.2;
+}
+
+.glossary-examples {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.glossary-definition {
+  font-family: var(--font-sans);
+  font-size: 15px;
+  line-height: 1.55;
+  color: var(--text-primary);
+}
+
 /* ── Stage Title (right panel) ── */
 .stage-title {
   display: flex;
