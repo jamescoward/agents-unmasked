@@ -123,6 +123,17 @@ function restoreRightPanel(key) {
   }
 }
 
+const chatSnapshots = {};
+
+function snapshotChat(key) {
+  chatSnapshots[key] = chatMessages.innerHTML;
+}
+
+function restoreChat(key) {
+  const snap = chatSnapshots[key];
+  if (snap !== undefined) chatMessages.innerHTML = snap;
+}
+
 // ── Progress bar ──
 
 function initProgressBar() {
@@ -882,132 +893,95 @@ I'll also mention that the historic capital of Czechoslovakia was Prague.</div>
   // STAGE 6: RAG
   // ════════════════════════════════════════
 
+  // Step: User typing — right panel title set, empty container only
   addStep(6,
     () => {
       hidePanelOverlay();
+      snapshotChat('pre-stage-6');
+      chatMessages.innerHTML = '';
       setInputText("What's our parental leave policy?");
       rightPanelTitle.textContent = 'Under the Hood — RAG';
-      setRightPanelContent(`
-        <div id="rag-callback" class="loop-callback">↩ Remember the loop? RAG is just the model calling a search tool.</div>
-        <div id="rag-context-pre">
-          <div class="context-section user-msg highlight-new">
-            <div class="context-label"><span class="dot"></span> User</div>
-            <div class="context-body">What's our parental leave policy?</div>
-          </div>
-        </div>
-        ${buildLoopFrame()}
-        <div id="rag-result"></div>
-      `);
-      setLoopState({
-        iteration: 'Iteration 1',
-        active: null,
-        model: 'Reads the conversation, sees a question about company docs',
-        tool: '(waiting)',
-        harness: '(waiting)',
-        status: 'The model decides whether to look something up — same loop as before'
-      });
+      setRightPanelContent(`<div id="rag-flow"></div>`);
     },
     () => {
       clearInput();
+      restoreChat('pre-stage-6');
       restoreRightPanel('end-of-stage-5');
     }
   );
 
-  // Step: Send the question — chat bubble appears (right panel was already set up)
+  // Step: User sends — chat bubble and user box appear together
   let msg6user;
   addStep(6,
     () => {
       clearInput();
       msg6user = addChatMessage('user', "What's our parental leave policy?");
+      document.getElementById('rag-flow').insertAdjacentHTML('beforeend', `
+        <div class="context-section user-msg highlight-new" id="rag-user">
+          <div class="context-label"><span class="dot"></span> User</div>
+          <div class="context-body">What's our parental leave policy?</div>
+        </div>
+      `);
     },
     () => {
       removeChatMessage(msg6user);
       setInputText("What's our parental leave policy?");
+      document.getElementById('rag-user')?.remove();
     }
   );
 
-  // Step: Iteration 1 — model decides to search the knowledge base
+  // Step: Tool call box appears
   addStep(6,
     () => {
-      setLoopState({
-        active: 'tool',
-        model: 'Decides it needs to look this up',
-        tool: 'search_knowledge_base("parental leave policy")',
-        harness: '(waiting)',
-        status: 'The model can\'t see internal docs — it asks the harness to search'
-      });
+      document.getElementById('rag-flow').insertAdjacentHTML('beforeend', `
+        <div class="context-section tool-call highlight-new" id="rag-tool">
+          <div class="context-label"><span class="dot"></span> Tool call</div>
+          <div class="context-body">search_knowledge_base("parental leave policy")</div>
+        </div>
+      `);
     },
     () => {
-      setLoopState({
-        active: null,
-        model: 'Reads the conversation, sees a question about company docs',
-        tool: '(waiting)',
-        harness: '(waiting)',
-        status: 'The model decides whether to look something up — same loop as before'
-      });
+      document.getElementById('rag-tool')?.remove();
     }
   );
 
-  // Step: Iteration 1 — harness queries the company knowledge base, loop pulses back
+  // Step: Tool result appears with handbook passages
   addStep(6,
     () => {
-      setLoopState({
-        active: 'harness',
-        harness: 'Searches the company knowledge base → returns matching passages',
-        status: 'Tool result is added to the context. Loop back to the model.',
-        pulseBack: true
-      });
-      const result = document.getElementById('rag-result');
-      result.innerHTML = `
-        <div class="context-section rag highlight-new" style="margin-top: 14px;">
-          <div class="context-label"><span class="dot"></span> Tool result — passages from the company knowledge base</div>
+      document.getElementById('rag-flow').insertAdjacentHTML('beforeend', `
+        <div class="context-section tool-result highlight-new" id="rag-result">
+          <div class="context-label"><span class="dot"></span> Tool result — company knowledge base</div>
           <div class="context-body">[handbook/parental-leave.md]
-"All employees are entitled to 16 weeks of paid parental leave. Leave can be taken in blocks or continuously within the first 12 months…"
+"All employees are entitled to 26 weeks of paid parental leave..."
 
 [handbook/benefits-overview.md]
-"Parental leave is available to all employees regardless of gender or tenure. Additional unpaid leave of up to 8 weeks may be requested…"</div>
+"Parental leave is available to all employees regardless of gender..."</div>
         </div>
-      `;
+      `);
       rightPanelContent.scrollTop = rightPanelContent.scrollHeight;
     },
     () => {
-      setLoopState({
-        active: 'tool',
-        harness: '(waiting)',
-        status: 'The model can\'t see internal docs — it asks the harness to search'
-      });
-      document.getElementById('rag-result').innerHTML = '';
+      document.getElementById('rag-result')?.remove();
     }
   );
 
-  // Step: Iteration 2 — model uses the passages to answer (loop exits), assistant message appears
+  // Step: Assistant answers — chat bubble and assistant box appear together
   let msg6asst;
   addStep(6,
     () => {
-      setLoopState({
-        iteration: 'Loop exits',
-        active: 'model',
-        model: 'Reads the passages, writes the answer. No more tools needed.',
-        tool: '(none — model returned text)',
-        harness: '(idle)',
-        status: 'Loop exits when the model stops calling tools.',
-        exited: true
-      });
-      msg6asst = addChatMessage('assistant', 'Our parental leave policy offers <strong>16 weeks of paid leave</strong> for all employees, regardless of gender or tenure. You can take it in continuous blocks or split it within the first 12 months. Additional unpaid leave of up to 8 weeks is also available upon request.');
+      msg6asst = addChatMessage('assistant', 'Our parental leave policy offers <strong>26 weeks of paid leave</strong> for all employees, regardless of gender.');
+      document.getElementById('rag-flow').insertAdjacentHTML('beforeend', `
+        <div class="context-section assistant-msg highlight-new" id="rag-assistant">
+          <div class="context-label"><span class="dot"></span> Assistant</div>
+          <div class="context-body">Our parental leave policy offers 26 weeks of paid leave for all employees, regardless of gender.</div>
+        </div>
+      `);
       rightPanelContent.scrollTop = rightPanelContent.scrollHeight;
       snapshotRightPanel('stage-6-assistant-response');
     },
     () => {
       removeChatMessage(msg6asst);
-      setLoopState({
-        iteration: 'Iteration 1',
-        active: 'harness',
-        model: 'Decides it needs to look this up',
-        tool: 'search_knowledge_base("parental leave policy")',
-        harness: 'Searches the company knowledge base → returns matching passages',
-        status: 'Tool result is added to the context. Loop back to the model.',
-        exited: false
-      });
+      document.getElementById('rag-assistant')?.remove();
     }
   );
 
@@ -1025,7 +999,7 @@ I'll also mention that the historic capital of Czechoslovakia was Prague.</div>
   );
 
   // ════════════════════════════════════════
-  // STAGE 7: System Prompts & agent.md
+  // STAGE 7: System Prompts
   // ════════════════════════════════════════
 
   addStep(7,
@@ -1060,49 +1034,6 @@ Never make up information about policies.</div>
     }
   );
 
-  // Step: Show agent.md being loaded
-  addStep(7,
-    () => {
-      const sections = document.getElementById('context-sections');
-      const systemSection = sections.querySelector('.context-section.system');
-      // Insert agent.md (plus a plain-English explainer) before the system section
-      const wrapper = document.createElement('div');
-      wrapper.className = 'agent-md-wrapper highlight-new';
-      wrapper.innerHTML = `
-        <div class="context-section system" style="border-color: rgba(247, 120, 186, 0.4); background: var(--pink-dim); margin-bottom: 6px;">
-          <div class="context-label" style="color: var(--pink);"><span class="dot" style="background: var(--pink);"></span> agent.md</div>
-          <div class="context-body"># Acme Corp Assistant
-
-## Identity
-- Name: AcmeBot
-- Role: Internal HR & Policy Assistant
-
-## Rules
-- Only reference official handbook documents
-- Escalate sensitive topics to HR team
-- Log all policy queries for compliance
-
-## Available Tools
-- search_handbook: Search company docs
-- create_ticket: Create HR tickets</div>
-        </div>
-        <div class="agent-md-explainer">
-          <strong>What is agent.md?</strong>
-          A plain-text file you (or your team) write — house rules for the agent.
-          Who it is, how it should behave, what it's allowed to do.
-          The agent reads it before every conversation.
-        </div>
-      `;
-      sections.insertBefore(wrapper, systemSection);
-      rightPanelContent.scrollTop = 0;
-    },
-    () => {
-      const sections = document.getElementById('context-sections');
-      if (sections && sections.firstElementChild) {
-        sections.removeChild(sections.firstElementChild);
-      }
-    }
-  );
 
   // Step: Annotation
   addStep(7,
@@ -1128,6 +1059,8 @@ Never make up information about policies.</div>
 
   addStep(8,
     () => {
+      snapshotChat('pre-stage-8');
+      chatMessages.innerHTML = '';
       setInputText('draft a polite decline to this meeting invite');
       rightPanelTitle.textContent = 'Under the Hood — Skills';
       setRightPanelContent(`
@@ -1136,6 +1069,7 @@ Never make up information about policies.</div>
     },
     () => {
       clearInput();
+      restoreChat('pre-stage-8');
       restoreRightPanel('end-of-stage-7');
     }
   );
@@ -1285,22 +1219,6 @@ Never invent meeting details or commitments.</div>
     () => {
       const fp = document.getElementById('full-picture');
       fp.innerHTML += `
-        <div class="context-section system" style="padding: 8px 12px; margin-bottom: 6px; border-color: rgba(247, 120, 186, 0.4); background: var(--pink-dim);">
-          <div class="context-label" style="color: var(--pink);"><span class="dot" style="background: var(--pink);"></span> agent.md</div>
-          <div class="context-body" style="font-size: 11px;">Identity, rules, available tools...</div>
-        </div>
-      `;
-    },
-    () => {
-      const fp = document.getElementById('full-picture');
-      fp.removeChild(fp.lastElementChild);
-    }
-  );
-
-  addStep(9,
-    () => {
-      const fp = document.getElementById('full-picture');
-      fp.innerHTML += `
         <div class="context-section tool-result" style="padding: 8px 12px; margin-bottom: 6px;">
           <div class="context-label"><span class="dot"></span> Skill Expansion</div>
           <div class="context-body" style="font-size: 11px;">Detailed instructions loaded on demand...</div>
@@ -1383,7 +1301,7 @@ Never invent meeting details or commitments.</div>
       const fp = document.getElementById('full-picture');
       fp.innerHTML += `
         <div class="built-with-agent visible" style="margin-top: 12px;">
-          This presentation was built with Claude Code. (in about an hour)
+          This presentation was built with Claude Code.
         </div>
       `;
       rightPanelContent.scrollTop = rightPanelContent.scrollHeight;

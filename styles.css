@@ -592,18 +592,9 @@ html, body {
   min-height: 18px;
   max-width: 320px;
   line-height: 1.45;
+  margin-right: 60px; /* align under boxes, offsetting the 56px back-arrow + 4px gap */
 }
 
-.loop-callback {
-  font-family: var(--font-sans);
-  font-size: 12px;
-  font-style: italic;
-  color: var(--text-secondary);
-  text-align: center;
-  padding: 6px 12px;
-  margin-bottom: 10px;
-  border-bottom: 1px dashed var(--border);
-}
 
 /* ── agent.md plain-English explainer ── */
 .agent-md-wrapper {
