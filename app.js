@@ -195,8 +195,8 @@ function defineSteps() {
         </div>
       </div>
       <div class="glossary-definition">
-        A text-in, text-out function running on someone else’s servers.
-        It can’t do anything on its own — the brains of an agent, but a brain in a jar.
+        A text-in, text-out function running in the cloud.
+        It can’t do anything on its own. The brains of an agent, but a brain in a jar.
       </div>
     </div>
   `;
@@ -212,7 +212,7 @@ function defineSteps() {
         </div>
         <div class="glossary-card-titles">
           <div class="glossary-term">Harness</div>
-          <div class="glossary-examples">Claude Code, Cursor, ChatGPT app…</div>
+          <div class="glossary-examples">Copilot Chat, Claude Code, ChatGPT app…</div>
         </div>
       </div>
       <div class="glossary-definition">
@@ -223,10 +223,9 @@ function defineSteps() {
   `;
 
   function renderGlossary({ showHarness }) {
-    rightPanelTitle.textContent = 'Two terms to know';
+    rightPanelTitle.textContent = 'Glossary';
     setRightPanelContent(`
       <div class="glossary-stage">
-        <div class="glossary-intro">Before we start — two terms you’ll hear a lot.</div>
         <div class="glossary-cards">
           ${MODEL_CARD_HTML}
           ${showHarness ? HARNESS_CARD_HTML : ''}
