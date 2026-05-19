@@ -951,10 +951,10 @@ I'll also mention that the historic capital of Czechoslovakia was Prague.</div>
       document.getElementById('rag-flow').insertAdjacentHTML('beforeend', `
         <div class="context-section tool-result highlight-new" id="rag-result">
           <div class="context-label"><span class="dot"></span> Tool result — company knowledge base</div>
-          <div class="context-body">[handbook/parental-leave.md]
+          <div class="context-body">[handbook/parental-leave.doc]
 "All employees are entitled to 26 weeks of paid parental leave..."
 
-[handbook/benefits-overview.md]
+[handbook/benefits-overview.doc]
 "Parental leave is available to all employees regardless of gender..."</div>
         </div>
       `);
