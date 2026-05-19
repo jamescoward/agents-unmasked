@@ -280,16 +280,19 @@ function defineSteps() {
     () => { clearInput(); }
   );
 
-  // Step: User "sends" the message
+  // Step: User "sends" the message — clear the glossary and show the context panel
   let msg1user;
   addStep(2,
     () => {
       clearInput();
       msg1user = addChatMessage('user', 'What is the capital of France?');
+      initContextPanel(2);
+      appendContextSection('user-msg', 'User', 'What is the capital of France?');
     },
     () => {
       removeChatMessage(msg1user);
       setInputText('What is the capital of France?');
+      renderGlossary({ showHarness: true });
     }
   );
 
@@ -306,10 +309,15 @@ function defineSteps() {
     () => {
       removeTypingIndicator();
       msg1asst = addChatMessage('assistant', 'The capital of France is Paris. It\'s the largest city in France and serves as the country\'s political, economic, and cultural centre.');
+      appendContextSection('assistant-msg', 'Assistant',
+        "The capital of France is Paris. It's the largest city in France and serves as the country's political, economic, and cultural centre.");
+      updateContextBar(4);
     },
     () => {
       removeChatMessage(msg1asst);
       showTypingIndicator();
+      removeLastContextSection();
+      updateContextBar(2);
     }
   );
 
@@ -325,10 +333,14 @@ function defineSteps() {
     () => {
       clearInput();
       msg2user = addChatMessage('user', 'What about Germany?');
+      appendContextSection('user-msg', 'User', 'What about Germany?');
+      updateContextBar(5);
     },
     () => {
       removeChatMessage(msg2user);
       setInputText('What about Germany?');
+      removeLastContextSection();
+      updateContextBar(4);
     }
   );
 
@@ -344,10 +356,15 @@ function defineSteps() {
     () => {
       removeTypingIndicator();
       msg2asst = addChatMessage('assistant', 'The capital of Germany is Berlin. It\'s the largest city in Germany and has a rich history, particularly during the Cold War when it was divided into East and West Berlin.');
+      appendContextSection('assistant-msg', 'Assistant',
+        "The capital of Germany is Berlin. It's the largest city in Germany and has a rich history, particularly during the Cold War when it was divided into East and West Berlin.");
+      updateContextBar(8);
     },
     () => {
       removeChatMessage(msg2asst);
       showTypingIndicator();
+      removeLastContextSection();
+      updateContextBar(5);
     }
   );
 
@@ -396,44 +413,6 @@ function defineSteps() {
       sections.removeChild(sections.lastElementChild);
     }
   }
-
-  // Step: Transition — show the context panel with just the first user message
-  addStep(3,
-    () => {
-      initContextPanel(2);
-      appendContextSection('user-msg', 'User', 'What is the capital of France?');
-    },
-    () => { renderGlossary({ showHarness: true }); }
-  );
-
-  // Step: First assistant response appears in context
-  addStep(3,
-    () => {
-      appendContextSection('assistant-msg', 'Assistant',
-        "The capital of France is Paris. It's the largest city in France and serves as the country's political, economic, and cultural centre.");
-      updateContextBar(4);
-    },
-    () => { removeLastContextSection(); updateContextBar(2); }
-  );
-
-  // Step: Second user message in context
-  addStep(3,
-    () => {
-      appendContextSection('user-msg', 'User', 'What about Germany?');
-      updateContextBar(5);
-    },
-    () => { removeLastContextSection(); updateContextBar(4); }
-  );
-
-  // Step: Second assistant response in context
-  addStep(3,
-    () => {
-      appendContextSection('assistant-msg', 'Assistant',
-        "The capital of Germany is Berlin. It's the largest city in Germany and has a rich history, particularly during the Cold War when it was divided into East and West Berlin.");
-      updateContextBar(8);
-    },
-    () => { removeLastContextSection(); updateContextBar(5); }
-  );
 
   // Step: User types a new question
   addStep(3,
