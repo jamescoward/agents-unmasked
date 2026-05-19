@@ -627,9 +627,9 @@ I'll also mention that the historic capital of Czechoslovakia was Prague.</div>
   function buildLoopFrame() {
     return `
       <div class="loop-frame">
-        <div class="loop-iteration-badge" id="loop-badge">Iteration 1</div>
         <div class="loop-row">
           <div class="loop-stack">
+            <div class="loop-iteration-badge" id="loop-badge">Iteration 1</div>
             <div class="loop-step model-step" id="ls-model">
               <div class="loop-step-title">🤖 Model</div>
               <div class="loop-step-detail" id="ls-model-detail">Reads the whole conversation</div>
@@ -646,8 +646,8 @@ I'll also mention that the historic capital of Czechoslovakia was Prague.</div>
             </div>
           </div>
           <svg class="loop-back-arrow" id="loop-back-arrow" viewBox="0 0 60 200" preserveAspectRatio="none" aria-hidden="true">
-            <path d="M 4 196 Q 55 196 55 100 Q 55 4 4 4" stroke="currentColor" stroke-width="2" stroke-dasharray="5 4" fill="none" />
-            <polygon points="0 4, 8 0, 8 8" fill="currentColor" />
+            <path d="M 4 196 Q 55 196 55 120 Q 55 44 4 44" stroke="currentColor" stroke-width="2" stroke-dasharray="5 4" fill="none" />
+            <polygon points="0 44, 8 40, 8 48" fill="currentColor" />
           </svg>
         </div>
         <div class="loop-status" id="loop-status">The harness wraps the model and runs tools on its behalf</div>
@@ -701,7 +701,7 @@ I'll also mention that the historic capital of Czechoslovakia was Prague.</div>
     }
   );
 
-  // Step: User sends + scaffold the loop diagram
+  // Step: User sends + scaffold the loop diagram — model immediately active
   let msg5user;
   addStep(5,
     () => {
@@ -709,6 +709,7 @@ I'll also mention that the historic capital of Czechoslovakia was Prague.</div>
       msg5user = addChatMessage('user', 'Save these capitals to my notes');
       rightPanelTitle.textContent = 'Under the Hood — Tool Calling';
       setRightPanelContent(buildLoopFrame());
+      setLoopState({ active: 'model' });
     },
     () => {
       removeChatMessage(msg5user);
@@ -717,26 +718,42 @@ I'll also mention that the historic capital of Czechoslovakia was Prague.</div>
     }
   );
 
-  // Step: Iteration 1 — model decides to read the file
+  // Step: Iteration 1 — model decides it needs to read (tool box not updated yet)
   addStep(5,
     () => {
       setLoopState({
         iteration: 'Iteration 1',
-        active: 'tool',
+        active: 'model',
         model: 'Decides it needs to read the file first',
-        tool: 'read_file("notes.txt")',
-        harness: '(waiting)',
-        status: 'The model can\'t open files itself — it asks the harness to do it'
+        status: 'The model reads the conversation and decides what to do next'
       });
     },
     () => {
       setLoopState({
         iteration: 'Iteration 1',
-        active: null,
+        active: 'model',
         model: 'Reads the whole conversation',
         tool: '(waiting)',
         harness: '(waiting)',
         status: 'The harness wraps the model and runs tools on its behalf'
+      });
+    }
+  );
+
+  // Step: Iteration 1 — tool call issued
+  addStep(5,
+    () => {
+      setLoopState({
+        active: 'tool',
+        tool: 'read_file("notes.txt")',
+        status: 'The model can\'t open files itself — it asks the harness to do it'
+      });
+    },
+    () => {
+      setLoopState({
+        active: 'model',
+        tool: '(waiting)',
+        status: 'The model reads the conversation and decides what to do next'
       });
     }
   );
@@ -760,15 +777,13 @@ I'll also mention that the historic capital of Czechoslovakia was Prague.</div>
     }
   );
 
-  // Step: Iteration 2 — model decides to write
+  // Step: Iteration 2 — model active, reads updated context (tool box not updated yet)
   addStep(5,
     () => {
       setLoopState({
         iteration: 'Iteration 2',
-        active: 'tool',
+        active: 'model',
         model: 'Sees the file, appends the capitals',
-        tool: 'write_file("notes.txt", …)',
-        harness: '(waiting)',
         status: 'Same loop, different tool. The bubbles update.'
       });
     },
@@ -780,6 +795,26 @@ I'll also mention that the historic capital of Czechoslovakia was Prague.</div>
         tool: 'read_file("notes.txt")',
         harness: 'Opens notes.txt → returns the contents',
         status: 'Tool result is added to the context. Loop back to the model.'
+      });
+    }
+  );
+
+  // Step: Iteration 2 — tool call issued
+  addStep(5,
+    () => {
+      setLoopState({
+        active: 'tool',
+        tool: 'write_file("notes.txt", …)',
+        harness: '(waiting)',
+        status: 'Same loop, different tool. The bubbles update.'
+      });
+    },
+    () => {
+      setLoopState({
+        active: 'model',
+        tool: 'read_file("notes.txt")',
+        harness: 'Opens notes.txt → returns the contents',
+        status: 'Same loop, different tool. The bubbles update.'
       });
     }
   );
@@ -803,7 +838,7 @@ I'll also mention that the historic capital of Czechoslovakia was Prague.</div>
     }
   );
 
-  // Step: Loop exits — model returns text, no more tool calls
+  // Step: Loop exits — model returns text, no dimming yet so the final state is visible
   let msg5asst;
   addStep(5,
     () => {
@@ -813,8 +848,7 @@ I'll also mention that the historic capital of Czechoslovakia was Prague.</div>
         model: 'No more tools needed. Returns a text reply.',
         tool: '(none — model returned text)',
         harness: '(idle)',
-        status: 'Loop exits when the model stops calling tools.',
-        exited: true
+        status: 'Loop exits when the model stops calling tools.'
       });
       msg5asst = addChatMessage('assistant', 'Done! I\'ve saved the capital cities to your notes.');
     },
@@ -826,8 +860,7 @@ I'll also mention that the historic capital of Czechoslovakia was Prague.</div>
         model: 'Sees the file, appends the capitals',
         tool: 'write_file("notes.txt", …)',
         harness: 'Writes notes.txt → returns success',
-        status: 'Tool result is added to the context. Loop back to the model.',
-        exited: false
+        status: 'Tool result is added to the context. Loop back to the model.'
       });
     }
   );

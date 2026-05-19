@@ -513,12 +513,17 @@ html, body {
   gap: 0;
 }
 
+.loop-stack .loop-iteration-badge {
+  margin-bottom: 16px;
+}
+
 .loop-stack .loop-step {
   /* Persistent bubbles — always visible, content updates in place */
   opacity: 1;
   transform: none;
-  min-width: 240px;
-  max-width: 280px;
+  width: 260px;
+  height: 76px;
+  overflow: hidden;
   flex-direction: column;
   align-items: stretch;
   gap: 2px;
@@ -552,7 +557,11 @@ html, body {
   text-transform: uppercase;
   letter-spacing: 0.5px;
   color: var(--text-muted);
-  margin-left: 4px;
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translateY(-50%) translateX(10px);
+  white-space: nowrap;
 }
 
 .loop-back-arrow {
@@ -647,6 +656,9 @@ html, body {
   color: var(--text-muted);
   line-height: 1;
   padding: 4px 0;
+  align-self: stretch;
+  text-align: center;
+  position: relative;
 }
 
 /* ── Skills ── */
