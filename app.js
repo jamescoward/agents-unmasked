@@ -285,10 +285,20 @@ function defineSteps() {
   // STAGE 2: The Chat Interface
   // ════════════════════════════════════════
 
-  // Step: User types question in input
+  // Step: User types question in input — right panel slides away so the chat takes centre stage
   addStep(2,
-    () => { setInputText('What is the capital of France?'); },
-    () => { clearInput(); }
+    () => {
+      setInputText('What is the capital of France?');
+      leftPanel.classList.remove('split');
+      leftPanel.classList.add('full');
+      rightPanel.classList.remove('visible');
+    },
+    () => {
+      clearInput();
+      leftPanel.classList.add('split');
+      leftPanel.classList.remove('full');
+      rightPanel.classList.add('visible');
+    }
   );
 
   // Step: User "sends" the message
@@ -408,13 +418,21 @@ function defineSteps() {
     }
   }
 
-  // Step: Transition — context panel appears with the first user message
+  // Step: Transition — right panel slides back in, context panel with the first user message
   addStep(3,
     () => {
       initContextPanel(2);
       appendContextSection('user-msg', 'User', 'What is the capital of France?');
+      leftPanel.classList.add('split');
+      leftPanel.classList.remove('full');
+      rightPanel.classList.add('visible');
     },
-    () => { renderGlossary({ showHarness: true }); }
+    () => {
+      renderGlossary({ showHarness: true });
+      leftPanel.classList.remove('split');
+      leftPanel.classList.add('full');
+      rightPanel.classList.remove('visible');
+    }
   );
 
   // Step: First assistant response appears in context
