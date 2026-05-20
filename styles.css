@@ -596,34 +596,6 @@ html, body {
 }
 
 
-/* ── agent.md plain-English explainer ── */
-.agent-md-wrapper {
-  margin-bottom: 12px;
-}
-
-.agent-md-explainer {
-  font-family: var(--font-sans);
-  font-size: 12.5px;
-  line-height: 1.55;
-  color: var(--text-secondary);
-  background: rgba(247, 120, 186, 0.06);
-  border-left: 3px solid var(--pink);
-  border-radius: 0 6px 6px 0;
-  padding: 10px 14px;
-  margin-bottom: 12px;
-}
-
-.agent-md-explainer strong {
-  display: block;
-  color: var(--pink);
-  font-family: var(--font-mono);
-  font-size: 11px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  margin-bottom: 4px;
-}
-
 .loop-step.model-step {
   background: var(--green-dim);
   border: 1px solid rgba(63, 185, 80, 0.3);
@@ -911,13 +883,6 @@ html, body {
   padding: 32px 36px;
   gap: 22px;
   animation: fadeIn 0.4s ease;
-}
-
-.glossary-intro {
-  font-family: var(--font-mono);
-  font-size: 13px;
-  color: var(--text-secondary);
-  letter-spacing: 0.2px;
 }
 
 .glossary-cards {

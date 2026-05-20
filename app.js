@@ -206,7 +206,7 @@ function defineSteps() {
         </div>
       </div>
       <div class="glossary-definition">
-        A text-in, text-out function running in the cloud.
+        A text-in, text-out program running in the cloud.
         It can’t do anything on its own. The brains of an agent, but a brain in a jar.
       </div>
     </div>
@@ -495,7 +495,12 @@ function defineSteps() {
       hidePanelOverlay();
       setInputText('What is the capital of Czechoslovakia?');
     },
-    () => { clearInput(); }
+    () => {
+      clearInput();
+      showPanelOverlay('var(--orange)', 'var(--orange-dim)',
+        `The model is stateless.<br>The <strong>whole conversation</strong> is sent on every request.`
+      );
+    }
   );
 
   let msg4user;
@@ -907,6 +912,9 @@ I'll also mention that the historic capital of Czechoslovakia was Prague.</div>
       clearInput();
       restoreChat('pre-stage-6');
       restoreRightPanel('end-of-stage-5');
+      showPanelOverlay('var(--orange)', 'var(--orange-dim)',
+        `An "agent" is just this loop running until the model stops calling tools.<br>That's it.`
+      );
     }
   );
 
@@ -1031,6 +1039,9 @@ Never make up information about policies.</div>
     },
     () => {
       restoreRightPanel('end-of-stage-6');
+      showPanelOverlay('var(--yellow)', 'var(--yellow-dim)',
+        `The model isn't learning anything. What looks like institutional knowledge is just a search result injected into the context.`
+      );
     }
   );
 
