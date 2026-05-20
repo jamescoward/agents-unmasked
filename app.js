@@ -285,19 +285,16 @@ function defineSteps() {
   // STAGE 2: The Chat Interface
   // ════════════════════════════════════════
 
-  // Step: User types question in input — right panel slides away so the chat takes centre stage
+  // Step: User types question in input — right panel clears so the chat takes focus
   addStep(2,
     () => {
       setInputText('What is the capital of France?');
-      leftPanel.classList.remove('split');
-      leftPanel.classList.add('full');
-      rightPanel.classList.remove('visible');
+      rightPanelTitle.textContent = '';
+      setRightPanelContent('');
     },
     () => {
       clearInput();
-      leftPanel.classList.add('split');
-      leftPanel.classList.remove('full');
-      rightPanel.classList.add('visible');
+      renderGlossary({ showHarness: true });
     }
   );
 
@@ -418,20 +415,15 @@ function defineSteps() {
     }
   }
 
-  // Step: Transition — right panel slides back in, context panel with the first user message
+  // Step: Transition — context panel appears with the first user message
   addStep(3,
     () => {
       initContextPanel(2);
       appendContextSection('user-msg', 'User', 'What is the capital of France?');
-      leftPanel.classList.add('split');
-      leftPanel.classList.remove('full');
-      rightPanel.classList.add('visible');
     },
     () => {
-      renderGlossary({ showHarness: true });
-      leftPanel.classList.remove('split');
-      leftPanel.classList.add('full');
-      rightPanel.classList.remove('visible');
+      rightPanelTitle.textContent = '';
+      setRightPanelContent('');
     }
   );
 
