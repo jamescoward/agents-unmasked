@@ -513,12 +513,17 @@ html, body {
   gap: 0;
 }
 
+.loop-stack .loop-iteration-badge {
+  margin-bottom: 16px;
+}
+
 .loop-stack .loop-step {
   /* Persistent bubbles — always visible, content updates in place */
   opacity: 1;
   transform: none;
-  min-width: 240px;
-  max-width: 280px;
+  width: 260px;
+  height: 76px;
+  overflow: hidden;
   flex-direction: column;
   align-items: stretch;
   gap: 2px;
@@ -552,7 +557,11 @@ html, body {
   text-transform: uppercase;
   letter-spacing: 0.5px;
   color: var(--text-muted);
-  margin-left: 4px;
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translateY(-50%) translateX(10px);
+  white-space: nowrap;
 }
 
 .loop-back-arrow {
@@ -583,46 +592,9 @@ html, body {
   min-height: 18px;
   max-width: 320px;
   line-height: 1.45;
+  margin-right: 60px; /* align under boxes, offsetting the 56px back-arrow + 4px gap */
 }
 
-.loop-callback {
-  font-family: var(--font-sans);
-  font-size: 12px;
-  font-style: italic;
-  color: var(--text-secondary);
-  text-align: center;
-  padding: 6px 12px;
-  margin-bottom: 10px;
-  border-bottom: 1px dashed var(--border);
-}
-
-/* ── agent.md plain-English explainer ── */
-.agent-md-wrapper {
-  margin-bottom: 12px;
-}
-
-.agent-md-explainer {
-  font-family: var(--font-sans);
-  font-size: 12.5px;
-  line-height: 1.55;
-  color: var(--text-secondary);
-  background: rgba(247, 120, 186, 0.06);
-  border-left: 3px solid var(--pink);
-  border-radius: 0 6px 6px 0;
-  padding: 10px 14px;
-  margin-bottom: 12px;
-}
-
-.agent-md-explainer strong {
-  display: block;
-  color: var(--pink);
-  font-family: var(--font-mono);
-  font-size: 11px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  margin-bottom: 4px;
-}
 
 .loop-step.model-step {
   background: var(--green-dim);
@@ -647,6 +619,9 @@ html, body {
   color: var(--text-muted);
   line-height: 1;
   padding: 4px 0;
+  align-self: stretch;
+  text-align: center;
+  position: relative;
 }
 
 /* ── Skills ── */
@@ -898,6 +873,108 @@ html, body {
   font-family: var(--font-sans);
   font-size: 14px;
   color: var(--text-muted);
+}
+
+/* ── Glossary (Stage 1) ── */
+.glossary-stage {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: 32px 36px;
+  gap: 22px;
+  animation: fadeIn 0.4s ease;
+}
+
+.glossary-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  flex: 1;
+  min-height: 0;
+}
+
+.glossary-card {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 20px 22px;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  border-left-width: 3px;
+  animation: glossaryCardIn 0.4s ease both;
+}
+
+@keyframes glossaryCardIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.glossary-card.glossary-model {
+  border-left-color: var(--purple);
+}
+
+.glossary-card.glossary-harness {
+  border-left-color: var(--orange);
+}
+
+.glossary-card-header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.glossary-icon {
+  flex-shrink: 0;
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+}
+
+.glossary-model .glossary-icon {
+  background: var(--purple-dim);
+  color: var(--purple);
+}
+
+.glossary-harness .glossary-icon {
+  background: var(--orange-dim);
+  color: var(--orange);
+}
+
+.glossary-icon svg {
+  width: 26px;
+  height: 26px;
+}
+
+.glossary-card-titles {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.glossary-term {
+  font-family: var(--font-sans);
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--text-primary);
+  line-height: 1.2;
+}
+
+.glossary-examples {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.glossary-definition {
+  font-family: var(--font-sans);
+  font-size: 15px;
+  line-height: 1.55;
+  color: var(--text-primary);
 }
 
 /* ── Stage Title (right panel) ── */
