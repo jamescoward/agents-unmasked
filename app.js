@@ -126,12 +126,13 @@ function restoreRightPanel(key) {
 const chatSnapshots = {};
 
 function snapshotChat(key) {
-  chatSnapshots[key] = chatMessages.innerHTML;
+  // Retain the original nodes so backward steps can still remove their messages.
+  chatSnapshots[key] = Array.from(chatMessages.childNodes);
 }
 
 function restoreChat(key) {
   const snap = chatSnapshots[key];
-  if (snap !== undefined) chatMessages.innerHTML = snap;
+  if (snap !== undefined) chatMessages.replaceChildren(...snap);
 }
 
 // ── Progress bar ──
@@ -139,7 +140,9 @@ function restoreChat(key) {
 function initProgressBar() {
   progressDots.innerHTML = '';
   for (let i = 1; i <= TOTAL_STAGES; i++) {
-    const dot = document.createElement('div');
+    const dot = document.createElement('button');
+    dot.type = 'button';
+    dot.setAttribute('aria-label', `Stage ${i}: ${STAGE_NAMES[i]}`);
     dot.className = 'progress-dot';
     dot.dataset.stage = i;
     dot.addEventListener('click', () => jumpToStage(i));
@@ -153,10 +156,13 @@ function updateProgressBar(stage) {
   dots.forEach(dot => {
     const s = parseInt(dot.dataset.stage);
     dot.className = 'progress-dot';
+    if (s === stage) dot.setAttribute('aria-current', 'step');
+    else dot.removeAttribute('aria-current');
     if (s < stage) dot.classList.add('completed');
     else if (s === stage) dot.classList.add('active');
   });
   progressLabel.textContent = `${stage} / ${TOTAL_STAGES}  ${STAGE_NAMES[stage] || ''}`;
+  GuidedTour.render();
 }
 
 // ── Step builder helpers ──
@@ -206,7 +212,7 @@ function defineSteps() {
         </div>
       </div>
       <div class="glossary-definition">
-        A text-in, text-out program running in the cloud.
+        An AI program that takes input and produces a response.
         It can’t do anything on its own. The brains of an agent, but a brain in a jar.
       </div>
     </div>
@@ -227,8 +233,8 @@ function defineSteps() {
         </div>
       </div>
       <div class="glossary-definition">
-        The body around the brain. Software running on your computer that lets the
-        model see and act in the world.
+        The body around the brain. Software around the model that lets it
+        see and act in the world.
       </div>
     </div>
   `;
@@ -507,7 +513,7 @@ function defineSteps() {
   addStep(3,
     () => {
       showPanelOverlay('var(--orange)', 'var(--orange-dim)',
-        `The model is stateless.<br>The <strong>whole conversation</strong> is sent on every request.`
+        `The model relies on the context supplied with each request.<br>The app sends <strong>relevant conversation history</strong> along with your question.`
       );
       snapshotRightPanel('end-of-stage-3');
     },
@@ -529,7 +535,7 @@ function defineSteps() {
     () => {
       clearInput();
       showPanelOverlay('var(--orange)', 'var(--orange-dim)',
-        `The model is stateless.<br>The <strong>whole conversation</strong> is sent on every request.`
+        `The model relies on the context supplied with each request.<br>The app sends <strong>relevant conversation history</strong> along with your question.`
       );
     }
   );
@@ -581,7 +587,7 @@ function defineSteps() {
       if (sections) {
         sections.innerHTML += `
           <div class="context-section thinking highlight-new">
-            <div class="context-label"><span class="dot"></span> Thinking <span style="font-size: 10px; opacity: 0.6; font-weight: 400; text-transform: none;">(hidden from user)</span></div>
+            <div class="context-label"><span class="dot"></span> Thinking <span style="font-size: 10px; opacity: 0.6; font-weight: 400; text-transform: none;">(illustrative example)</span></div>
             <div class="context-body">The user is asking about Czechoslovakia, but that country no longer exists. It dissolved on 1 January 1993 into two independent states: the Czech Republic (now Czechia) and Slovakia.
 
 Rather than just saying "it doesn't exist", I should be helpful and give them the capitals of both successor states:
@@ -652,7 +658,7 @@ I'll also mention that the historic capital of Czechoslovakia was Prague.</div>
         callout.className = 'context-callout';
         callout.style.borderColor = 'var(--orange)';
         callout.style.color = 'var(--orange)';
-        callout.innerHTML = `"Reasoning" is just the model thinking out loud in the context window.<br>It uses more tokens, but produces better answers for complex questions.`;
+        callout.innerHTML = `Reasoning models spend extra computation working through a problem.<br>This thinking block is an illustration, not a literal view into every model's reasoning. Better answers aren't guaranteed.`;
         sections.appendChild(callout);
         rightPanelContent.scrollTop = rightPanelContent.scrollHeight;
       }
@@ -1083,7 +1089,7 @@ Never make up information about policies.</div>
       const sections = document.getElementById('context-sections');
       sections.innerHTML += `
         <div class="context-callout" style="margin-top: 8px; border-color: var(--purple); color: var(--purple);">
-          Personality, rules, and capabilities are all just text<br>prepended to the context window. More context.
+          Personality and instructions are supplied as text in the context.<br>Tool access and permissions are controlled by the surrounding software.
         </div>
       `;
       rightPanelContent.scrollTop = rightPanelContent.scrollHeight;
@@ -1202,7 +1208,7 @@ Never invent meeting details or commitments.</div>
   let msg7asst;
   addStep(8,
     () => {
-      msg7asst = addChatMessage('assistant', "Here's a draft:\n\n<em>Hi [Name],</em>\n\n<em>Thanks for the invite. I'm going to have to pass on this one — my Thursday afternoon is fully booked with prep for the quarterly review. If a written update would help, I'm happy to send one through.</em>\n\n<em>Best,<br>[You]</em>");
+      msg7asst = addChatMessage('assistant', "Here's a draft:\n\n<em>Hi [Name],</em>\n\n<em>Thanks for the invite. I'm afraid I'll have to decline this time, but I appreciate you thinking of me.</em>\n\n<em>Best,<br>[You]</em>");
 
       const flow = document.getElementById('skill-flow');
       flow.innerHTML += `
@@ -1295,7 +1301,7 @@ Never invent meeting details or commitments.</div>
       fp.innerHTML += `
         <div class="context-section user-msg" style="padding: 8px 12px; margin-bottom: 6px;">
           <div class="context-label"><span class="dot"></span> Conversation History</div>
-          <div class="context-body" style="font-size: 11px;">Every message, every turn, sent every time...</div>
+          <div class="context-body" style="font-size: 11px;">Relevant conversation history supplied with each request...</div>
         </div>
       `;
     },
@@ -1311,7 +1317,7 @@ Never invent meeting details or commitments.</div>
       fp.innerHTML += `
         <div class="context-section thinking" style="padding: 8px 12px; margin-bottom: 6px;">
           <div class="context-label"><span class="dot"></span> Thinking Blocks</div>
-          <div class="context-body" style="font-size: 11px;">Chain-of-thought reasoning, hidden from user...</div>
+          <div class="context-body" style="font-size: 11px;">Working through the problem before answering (illustrative)...</div>
         </div>
       `;
     },
@@ -1438,7 +1444,8 @@ Never invent meeting details or commitments.</div>
 
 // ── Navigation ──
 
-function goForward() {
+function goForward(automatic = false) {
+  if (!automatic) GuidedTour.pause();
   if (isAnimating) return;
   if (currentStep >= steps.length - 1) return;
 
@@ -1449,8 +1456,9 @@ function goForward() {
 }
 
 function goBack() {
+  GuidedTour.pause();
   if (isAnimating) return;
-  if (currentStep < 0) return;
+  if (currentStep <= 0) return;
 
   const step = steps[currentStep];
   step.backward();
@@ -1464,6 +1472,7 @@ function goBack() {
 }
 
 function jumpToStage(targetStage) {
+  GuidedTour.pause();
   if (isAnimating) return;
 
   // Find the index of the first step in the target stage
@@ -1502,6 +1511,8 @@ function jumpToStage(targetStage) {
 // ── Keyboard handler ──
 
 document.addEventListener('keydown', (e) => {
+  if (e.target.closest('input, textarea, select, [contenteditable="true"]')) return;
+  if (e.key === ' ' && e.target.closest('button')) return;
   if (e.key === 'ArrowRight' || e.key === ' ') {
     e.preventDefault();
     goForward();
