@@ -17,7 +17,8 @@ stops it. The tour finishes at the conclusion, with build playback offered as an
 optional extra. This mode uses written explanations, with no audio or AI service.
 
 Presenter notes live in `guided.js`, in the same order as each stage's steps in
-`app.js`. Update both when adding or rearranging reveals.
+`app.js`. Explain only what the current step has revealed; keep each takeaway at
+its matching callout. Update both when adding or rearranging reveals.
 
 ## Browser regression check
 
@@ -34,4 +35,6 @@ The test defaults to `/usr/bin/chromium` and the local server on port 8000. Set
 `CHROMIUM_PATH` or `PRESENTATION_URL` to use other locations. It checks all tour
 steps forwards and backwards, autoplay timing and stopping, restart, optional
 playback, keyboard interaction, and a small-screen layout. External fonts are
-blocked during the test to verify the fallback fonts work.
+blocked during the test to verify the fallback fonts work. Content checks also
+protect the restored slide wording and prevent narration from getting ahead of
+key reveals, in both navigation directions.

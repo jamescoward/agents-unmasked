@@ -1,5 +1,6 @@
 const { chromium } = require('playwright-core');
 const assert = require('node:assert/strict');
+const verifyRevealContent = require('./reveal-content.cjs');
 (async () => {
  const browser = await chromium.launch({executablePath:process.env.CHROMIUM_PATH || '/usr/bin/chromium',headless:true,args:['--no-sandbox']});
  const page = await browser.newPage({viewport:{width:1440,height:900}});
@@ -22,6 +23,7 @@ const assert = require('node:assert/strict');
  const verify = async()=> {
    const expected=await page.evaluate(()=>{const stage=steps[currentStep].stage;return GUIDE_NOTES[stage][currentStep-steps.findIndex(s=>s.stage===stage)][0]});
    assert.equal(await page.locator('#guide-heading').textContent(),expected);
+   await verifyRevealContent(page);
  };
  for(let i=0;i<last;i++){await verify();await page.locator('#guide-next').click()}
  await verify();
