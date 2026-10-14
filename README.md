@@ -17,8 +17,11 @@ stops it. The tour finishes at the conclusion, with build playback offered as an
 optional extra. This mode uses written explanations, with no audio or AI service.
 
 Presenter notes live in `guided.js`, in the same order as each stage's steps in
-`app.js`. Explain only what the current step has revealed; keep each takeaway at
-its matching callout. Update both when adding or rearranging reveals.
+`app.js`. Write as a presenter: explain why a step matters, connect it to what the
+audience already understands, and develop the argument. Avoid captions that just
+repeat visible changes. Ground explanations in what has been revealed so far and
+keep each takeaway at its matching callout. Update both files when adding or
+rearranging reveals.
 
 ## Browser regression check
 
