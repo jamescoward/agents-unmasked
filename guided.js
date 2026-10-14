@@ -1,81 +1,81 @@
-// Explain only the current reveal. Keep each note aligned with defineSteps();
-// do not move a takeaway ahead of its visual or qualify the slide's wording.
-// Playback events use a shared note.
+// Speak as the presenter: explain why each step matters, rather than captioning
+// visible changes. Keep explanations grounded in what has been revealed so far;
+// save each takeaway for its matching callout. Playback uses a shared note.
 const GUIDE_NOTES = {
   1: [
-    ['Welcome to Agents Unmasked', 'Agents Unmasked: how LLM agents actually work under the hood, by James Coward. Use Next and Back to move through the presentation at your own pace, or choose Autoplay.'],
-    ['Meet the model', 'Claude, GPT and Gemini are models: text-in, text-out programs running in the cloud. The model is the brain in a jar. It produces text, but cannot do anything on its own.'],
-    ['Meet the harness', 'The harness is the body around the brain: software running on your computer that lets the model see and act in the world. Copilot Chat, Claude Code and the ChatGPT app are examples.']
+    ['What makes an agent an agent?', 'A fluent chat can make AI feel like a person on the other end. But what are we actually interacting with? “Agent” sounds like a whole new kind of intelligence. The useful starting point is to unpack what that word means.'],
+    ['A brain in a jar', 'The model is the part that turns text into more text. That is a powerful ability, but it does not give Claude or GPT hands. Asking a model to open a file does not, by itself, give it a way to touch your computer.'],
+    ['The body around the brain', 'The harness gives that language ability a way to do useful work. This is why two products using the same model can feel so different: the surrounding software determines what the model can see and act on. The model and the product are different things.']
   ],
   2: [
-    ['A question in the input box', 'The user has typed “What is the capital of France?” in the chat input. The right panel is empty, keeping our attention on the chat.'],
-    ['The message is sent', 'The question has moved from the input box into a user message in the conversation.'],
-    ['Waiting for a reply', 'The moving dots show the assistant preparing a reply. The user is waiting.'],
-    ['The answer arrives', 'The assistant answers Paris and adds a short description of the city. The exchange looks like an ordinary question and answer.'],
-    ['A follow-up question', 'The user types “What about Germany?” They have not repeated “What is the capital of”.'],
-    ['The follow-up is sent', '“What about Germany?” now appears as the next user message beneath the first exchange.'],
-    ['Waiting again', 'The typing indicator appears again while the user waits for the second reply.'],
-    ['The answer fits', 'The assistant answers Berlin. It has treated the short follow-up as another question about a capital city.']
+    ['Start with something familiar', 'A capital-city question is a useful starting point because the task is unambiguous and the answer is easy to recognise. There is no special command language to learn; we just ask a question.'],
+    ['Ordinary language is the interface', 'We have not told the assistant which function to run or which database field to look up. We have described what we want in everyday language and left it to the assistant to produce an answer.'],
+    ['A very human rhythm', 'Those typing dots borrow a familiar rhythm from messaging another person: your turn, a pause, then their turn. A small interface choice makes the interaction feel surprisingly social.'],
+    ['A straightforward answer', 'Paris is the answer we expected. The extra explanation also makes the reply feel conversational, rather than like a search box returning a single fact. So far, this could be a series of independent questions.'],
+    ['We leave most of the question out', '“What about Germany?” is incomplete on its own. What about its population, its language, its weather? We leave those words out because, in conversation, we expect the other participant to follow the thread.'],
+    ['An expectation borrowed from conversation', 'We have only named a country, but we are trusting the assistant to carry over the task. That is an expectation we bring from human conversation: once a subject is established, we do not restate it at every turn.'],
+    ['It feels like talking to someone', 'We do not usually notice how much we assume in an exchange like this. We simply wait for an appropriate reply, as though there were someone on the other end who has been following along.'],
+    ['It understood a question we never fully asked', 'Berlin answers the implied question perfectly. The interesting part is not knowing a capital city; it is understanding what those three words were asking. How did the assistant get the missing meaning?']
   ],
   3: [
-    ['The context window appears', 'The right panel now shows the API request. The first question is in the context window: the space available for text supplied to the model. The bar shows how much of that space is occupied.'],
-    ['The first reply is included', 'The Paris answer joins the first question in the context window. The bar grows from 2% to 4%. Both sides of that exchange are now visible on the right.'],
-    ['The follow-up has context', '“What about Germany?” appears beneath the France question and the Paris answer. Together, those messages give the short question its meaning.'],
-    ['The second reply is included', 'The Berlin answer joins the context too. Each message adds more text, and the bar now reads 8%. Models measure text in tokens: words or pieces of words.'],
-    ['Another short question', 'The user types “And Spain?” The earlier exchanges remain visible in the context window.'],
-    ['One message, two views', '“And Spain?” now appears in both the chat and the context window. The left shows the conversation; the right shows the text supplied to the model.'],
-    ['Waiting with the context in view', 'The typing indicator is back. On the right, the earlier questions and answers sit above the new Spain question.'],
-    ['The answer joins both views', 'The assistant answers Madrid. That reply appears in the chat and in the context window, whose bar has grown to 14%.'],
-    ['The model is stateless', 'The model is stateless. The whole conversation is sent every time. It gets the earlier messages again with each request; that is how it can answer a follow-up without remembering the previous request.']
+    ['Context is the working material', 'Context is the text the model has in front of it to work with. The context window is the space available for that material. Think of a desk: the question is something placed on it, and the desk has a limited size.'],
+    ['The assistant’s own words matter too', 'A conversation is shaped by answers as well as questions. If you ask an assistant to “explain that more simply”, its previous answer is the very thing you are referring to. That text belongs in the working material too.'],
+    ['The missing meaning is in the surrounding text', 'Put the Germany question beside the France exchange and the ambiguity disappears. The earlier question establishes the task, and the follow-up changes the country. That is what context contributes: meaning that the latest message does not contain on its own.'],
+    ['Conversation takes up space', 'Each exchange adds to the material the model has to work with. That space is measured in tokens: words or pieces of words. A long answer uses space just as a long question does; both contribute to the size of the conversation.'],
+    ['Two words can be enough', '“And Spain?” pushes the same shortcut further. A useful question does not have to be long if the surrounding conversation already establishes what is being asked. Length and clarity are different things.'],
+    ['The chat is an interface to the text', 'To us, this feels like a conversation. For the model, the question is part of a body of text to interpret. The connection between “Spain” and “capital city” is there in that text; it does not have to be spelled out in the latest sentence.'],
+    ['Useful context does work for you', 'This is why a short follow-up can be more effective than a long question without any background. The task has already been established. The new message only needs to say what has changed.'],
+    ['An answer becomes something to refer to', 'Madrid completes the exchange, but the answer is also part of the conversation now. A reply can introduce facts, names and explanations that a later question refers back to. The assistant’s output becomes working material in its own right.'],
+    ['The model is stateless', 'The model is stateless. The whole conversation is sent every time. It is not remembering the previous request; it is reading the earlier messages again. What feels like a continuous discussion is built from fresh requests containing the conversation.']
   ],
   4: [
-    ['A different question', 'The user types “What is the capital of Czechoslovakia?” in the input box.'],
-    ['The question enters the context', 'The question has been sent and appears in the right panel. The context window contains the conversation so far and the new question.'],
-    ['Thinking appears in the context', 'The thinking block works through the complication: Czechoslovakia dissolved in 1993. It identifies Czechia and Slovakia, their capitals, and the historic capital. This text is in the context window, hidden from the user’s chat.'],
-    ['The final answer appears', 'The user sees the final answer: historic Prague, now the capital of Czechia, and Bratislava, the capital of Slovakia. The thinking stays on the right; the answer appears in both panels.'],
-    ['Reasoning is thinking in the context', '“Reasoning” is just the model thinking out loud in the context window. It uses more tokens, but produces better answers for complex questions. The thinking block and the final answer both take up space in the context.']
+    ['The same question pattern', 'The earlier questions established a very easy pattern: name a country, get a capital. This question has exactly the same shape. It is tempting to treat it as just another item in that sequence.'],
+    ['What does a useful answer require?', 'The wording tells us what the user wants, but a useful answer takes more than matching the form of the question. The model has to work out how to respond to this particular request, rather than just continuing the earlier pattern.'],
+    ['Work through the premise before answering', 'Here is the complication: Czechoslovakia no longer exists. The thinking text works through what that means for the question, identifies the successor states, and plans an explanation. Writing those steps gives the model something to build on before it produces its reply.'],
+    ['Answer the question behind the question', 'Simply saying “Prague” would miss the point. The useful answer explains the historical change and gives the capitals of both successor states. The work in the thinking block has shaped an answer that addresses what the user needs to understand.'],
+    ['Reasoning is text in the context', '“Reasoning” is the model thinking out loud in the context window. It uses more tokens, but produces better answers for complex questions. The model can build on its own intermediate work, just as writing out a problem helps you work through it.']
   ],
   5: [
-    ['A request to act', 'The user types “Save these capitals to my notes”. This asks for a change to a file, beyond a text answer in the chat.'],
-    ['Model, tool call and harness', 'The request is sent. The diagram shows the model reading the whole conversation. The tool call and harness boxes are waiting; the harness wraps the model and runs tools on its behalf.'],
-    ['The model decides to read', 'The model decides it needs to read the file first. The model box is active; the tool call and harness boxes are still waiting.'],
-    ['The read request appears', 'The model emits read_file("notes.txt"). It cannot open the file itself, so it asks the harness to do it. The tool call box is now active.'],
-    ['The harness returns the contents', 'The harness opens notes.txt and returns its contents. The result is added to the context, and the arrow leads back to the model.'],
-    ['The model uses the file contents', 'Iteration 2 begins. The model sees the existing file and prepares the capitals to append. The model box is active again.'],
-    ['The write request appears', 'The model emits write_file("notes.txt", …) with the updated text. The tool call box is active, and the harness is waiting to run this request.'],
-    ['The harness writes the file', 'The harness writes notes.txt and returns success. That result is added to the context, and the arrow leads back to the model again.'],
-    ['The model replies and the loop exits', 'The model returns a text reply saying the capitals were saved. It makes no further tool call, so the harness is idle and the loop exits.'],
-    ['An agent is just this loop', 'An agent is just this loop running until the model stops calling tools. The model reads the context, calls a tool, receives the harness’s result, and repeats. That is it.']
+    ['Words need a way to become actions', '“Save these capitals” asks for something a text answer cannot accomplish by itself. A sentence saying “saved” does not change a file. This is where the distinction between the model and its harness becomes practical.'],
+    ['Deciding and doing are separate jobs', 'The model reads the request and decides what should happen. The harness provides the machinery for carrying out a tool call. Keeping those jobs separate explains how a text-producing model can participate in work on a computer.'],
+    ['Understand the file before changing it', 'Saving these facts safely means finding out what is already in the notes. Otherwise, adding something could mean replacing work the user wanted to keep. Reading first gives the model the information it needs to decide on a sensible change.'],
+    ['A tool call is a different kind of output', 'read_file("notes.txt") is still output from the model, but it is addressed to the harness. Its structure identifies an operation and a file. That gives the software something specific to execute, rather than a sentence to display to the user.'],
+    ['Bring the outside world back as text', 'The harness does the actual file access. Returning the contents as a tool result turns something outside the conversation into text the model can use. That is the bridge between a model working with text and a computer holding files.'],
+    ['The same model, with better information', 'There is no new intelligence taking over for the second iteration. The same model now has the file contents alongside the request. The extra information lets it work out how to add the capitals to what is already there.'],
+    ['Specify the change', 'The write_file call describes the next operation: which file to change and what its contents should be. The model supplies those details; the harness is responsible for performing the file operation.'],
+    ['A result is evidence of what happened', 'The success result matters. Choosing an action and completing it are separate events. Feeding the result back gives the model evidence that the requested change has actually happened.'],
+    ['The choice to stop is part of the process', 'With success in hand, the model can answer the user. This time its output is an ordinary reply instead of another tool call. That choice ends the cycle: there is no further operation for the harness to run.'],
+    ['An agent is just this loop', 'An agent is just this loop running until the model stops calling tools. The model decides, the harness acts, and the result becomes context for another decision. The word “agent” names that arrangement; it does not require a different kind of model.']
   ],
   6: [
-    ['A company policy question', 'The chat has cleared. The user types “What’s our parental leave policy?” The right panel is empty.'],
-    ['The policy question is sent', 'The question now appears in the chat and as a user message in the right panel.'],
-    ['A knowledge base search', 'The tool call is search_knowledge_base("parental leave policy"). It requests information from the company knowledge base.'],
-    ['The search results arrive', 'The tool returns passages from two handbook documents: 26 weeks of paid parental leave, available regardless of gender. Those passages are now in the context. RAG stands for retrieval-augmented generation: retrieving text to use in an answer.'],
-    ['An answer from the passages', 'The assistant answers with 26 weeks of paid leave for all employees, regardless of gender. The answer uses the handbook passages shown in the tool result.'],
-    ['Search results, not learning', 'The model is not learning anything. What looks like institutional knowledge is just a search result injected into the context. The policy information came from the retrieved passages.']
+    ['“Our” changes the question', 'A company policy is a different kind of fact from a capital city. “Our” points to a particular organisation, and the right answer depends on that organisation’s current rules. A plausible-sounding policy would not be enough.'],
+    ['What would count as an answer?', 'The user wants the company’s rule, not general advice about parental leave. To answer that request, the assistant needs company-specific information. Knowing what evidence the task requires is part of understanding the question.'],
+    ['Use a tool to get information', 'A tool can find information as well as change a file. This search asks the company knowledge base for material relevant to the question. The model does not have to supply the policy from its own general knowledge.'],
+    ['Put the right documents on the desk', 'These handbook passages provide the missing company-specific facts. RAG means retrieval-augmented generation: retrieve relevant text, then use it to generate an answer. The important move is bringing useful source material into the context.'],
+    ['The source does the factual work', 'The 26-week entitlement and the eligibility statement both come directly from the retrieved passages. The model’s job here is to turn that source material into a useful reply. The answer’s company knowledge comes from the documents it has been given.'],
+    ['It did not learn a company policy', 'The model is not learning anything. What looks like institutional knowledge is just a search result injected into the context. Change the source documents and a later search can supply different information, without retraining the model.']
   ],
   7: [
-    ['The system prompt is revealed', 'The system prompt was there all along, before the user’s messages. It tells the model to act as an Acme Corp assistant, answer policy questions, be concise and professional, and avoid making up information.'],
-    ['More text in the context', 'Personality, rules, and capabilities are all just text prepended to the context window. The system prompt supplies that text before the conversation. More context.']
+    ['The assistant has a brief', 'The user did not type these instructions. They come from the application and tell the model what job it is doing and how to approach it. The same question can produce a different response when the assistant has been given a different brief.'],
+    ['The brief is text too', 'Personality, rules, and capabilities are all just text prepended to the context window. There is no separate personality component needed to explain the Acme assistant’s manner: its brief tells it how to behave. More context.']
   ],
   8: [
-    ['A request for a meeting reply', 'The chat has cleared. The user types “draft a polite decline to this meeting invite”. The right panel is empty.'],
-    ['The available skills appear', 'The request is sent. The system prompt lists summarise, email-draft and meeting-notes, with short descriptions and triggers. It tells the model to load detailed instructions when a request matches a skill.'],
-    ['The model selects email-draft', 'The model matches the request to email-draft and calls load_skill("email-draft"). Selecting a skill is itself a tool call.'],
-    ['The skill expands into context', 'The full email-draft instructions now appear in the context. They cover tone, acknowledgement, a clear decline, an appropriate reason or alternative, a polite sign-off, and a 120-word limit. They also say never to invent meeting details or commitments.'],
-    ['The draft and the skill takeaway', 'The chat now shows the draft, including a Thursday afternoon conflict and an offer of a written update. The callout explains the mechanism: skills are prompt templates loaded via tool calls. The model picks the skill, its detailed instructions appear in context, and the model uses them to draft the reply.']
+    ['A familiar job with unstated expectations', '“Draft a polite decline” sounds simple, but there are plenty of choices inside it. How formal should it be? How much explanation is appropriate? We use a short request because we expect the assistant to understand the kind of work we mean.'],
+    ['A catalogue makes tasks discoverable', 'The short skill descriptions give the model a way to recognise the kinds of help available. The user can express an intention in ordinary language; they do not have to memorise the exact name of the relevant skill.'],
+    ['Match the intention, then ask for the instructions', 'The model has connected “polite decline” with email drafting. Loading that skill uses the same tool-calling mechanism as reading a file. It is a request for the instructions that fit this particular job.'],
+    ['Make the procedure explicit', 'The loaded instructions turn “write a good email” into a concrete procedure: consider the relationship, acknowledge the invitation, decline clearly, and close appropriately. That procedure is now material the model can work from, rather than something the user has to explain from scratch.'],
+    ['Reusable instructions, delivered when needed', 'Skills are prompt templates loaded via tool calls. The useful part is reuse: the person asking for an email does not have to spell out the writing procedure on every request. The model chooses the relevant instructions and uses them to produce the draft.']
   ],
   9: [
-    ['It is context all the way down', 'The conclusion puts the central idea on screen: it is context all the way down.'],
-    ['System prompt', 'The first layer is the system prompt: “You are a helpful assistant…” Instructions are text in the context.'],
-    ['Skill expansion', 'The skill expansion joins the stack: detailed instructions loaded on demand.'],
-    ['RAG chunks', 'Retrieved documents join the stack. They are injected into the context before the model call.'],
-    ['Conversation history', 'Every message, every turn, sent every time. The model is stateless; the whole conversation is sent every time.'],
-    ['Thinking blocks', 'Thinking blocks join the stack: chain-of-thought reasoning in the context, hidden from the user.'],
-    ['Tool calls and results', 'Tool calls and results complete the stack. Their exchanges keep the loop running until the task is done.'],
-    ['Built with Claude Code', 'This presentation was built with Claude Code. The presentation itself is an example of the agent workflow it has just explained.'],
-    ['The prompts that built the presentation', 'The final reveal shows the actual prompts: a plan, pauses for discussion, layout direction, light mode, the title, continuing the phases, polish, and collecting the prompts for this slide. The tour is complete. You can restart, revisit a section, or explore the optional build playback.']
+    ['It is context all the way down', 'Several things that sound like separate AI features share a common mechanism. They put useful text in front of the model. Asking what information it has to work with makes the system much easier to understand.'],
+    ['What job is the assistant doing?', 'The system prompt answers that question. It gives the model its role and instructions, so the user does not have to establish the assistant’s job at the start of every conversation.'],
+    ['How should it approach this task?', 'The skill supplies the procedure for a particular kind of work. Detailed guidance arrives when the task calls for it, instead of making the user repeat the instructions.'],
+    ['Which facts does the answer depend on?', 'Retrieval supplies the relevant source material. The model can answer about a company document because the useful passages have been placed in its context.'],
+    ['What have we already said?', 'The model is stateless. The whole conversation is sent every time. Conversation history supplies the continuity that makes a two-word follow-up meaningful.'],
+    ['What work has it done on the problem?', 'Thinking blocks give the model intermediate work to build on. That reasoning takes up context too, even though the user’s chat contains only the final answer.'],
+    ['How does the work reach the outside world?', 'Tool calls hand operations to the harness, and tool results bring the outcomes back into context. That is how text generation becomes part of a process that can read documents, change files and complete a task.'],
+    ['This was built with the same arrangement', 'This presentation was built with Claude Code. The model could work on the website because its harness let it read files, make edits and check the results. You are looking at the output of the process we have just unpacked.'],
+    ['The human’s part in the work', 'These actual prompts show the human contribution: setting the direction, asking for pauses, making design choices and requesting polish. The person did not need to specify every line of code to shape the result. They directed the work through conversation. You can explore the recorded build, revisit a section or restart the tour.']
   ]
 };
 
@@ -110,7 +110,7 @@ const GuidedTour = (() => {
     const finished = currentStep === finalIndex;
     const playback = stage === 10;
     const note = playback
-      ? ['Optional: how this was built', 'This is a recorded coding session, not a live agent. Use Next and Back to explore its events: requests, tool actions and results. It is an optional look behind the scenes; you have already covered the core explanation. Autoplay ends with the main tour.']
+      ? ['Optional: how this was built', 'The recording lets you examine the process in practice: the human’s instructions, the model’s tool requests and the results returned to it. Each result is evidence behind a subsequent decision. Use Next and Back to follow the work at your own pace.']
       : GUIDE_NOTES[stage][offset];
     document.getElementById('guide-heading').textContent = note[0];
     document.getElementById('guide-text').textContent = note[1];
