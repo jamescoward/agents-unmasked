@@ -1014,6 +1014,144 @@ html, body {
 }
 
 /* ── Utility ── */
+[hidden] {
+  display: none !important;
+}
+
+/* Reserve space for controls and explanations instead of covering the slides. */
+body {
+  display: flex;
+  flex-direction: column;
+}
+
+#app {
+  flex: 1;
+  min-height: 0;
+  height: auto;
+}
+
+#progress-bar {
+  flex-shrink: 0;
+}
+
+#guided-tour {
+  flex-shrink: 0;
+  padding: 16px 24px;
+  border-top: 1px solid var(--border);
+  background: var(--bg-primary);
+  max-height: 48vh;
+  overflow-y: auto;
+}
+
+.guide-copy {
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+.guide-position {
+  color: var(--text-secondary);
+  font-size: 12px;
+  margin-bottom: 5px;
+}
+
+#guide-heading {
+  font-size: 18px;
+  margin-bottom: 6px;
+}
+
+#guide-text {
+  font-size: 16px;
+  line-height: 1.55;
+}
+
+.guide-controls {
+  max-width: 1000px;
+  margin: 12px auto 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.guide-controls button, #guide-toggle {
+  font: inherit;
+  font-size: 13px;
+  color: var(--text-primary);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 7px 12px;
+  cursor: pointer;
+}
+
+.guide-controls button:hover:not(:disabled), #guide-toggle:hover {
+  border-color: var(--blue);
+}
+
+#guide-next, #guide-toggle[aria-pressed="true"] {
+  background: var(--blue-dim);
+  color: var(--blue);
+  border-color: var(--blue);
+}
+
+.guide-controls button:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+button:focus-visible {
+  outline: 2px solid var(--blue);
+  outline-offset: 3px;
+}
+
+#guide-status {
+  color: var(--text-secondary);
+  font-size: 12px;
+}
+
+button.progress-dot {
+  padding: 0;
+  border: 0;
+  flex-shrink: 0;
+}
+
+@media (max-width: 760px) {
+  body.guided #app {
+    flex-direction: column;
+    overflow-y: auto;
+  }
+
+  body.guided #left-panel, body.guided #right-panel.visible {
+    flex: none;
+    min-height: 220px;
+    overflow: visible;
+  }
+
+  body.guided #right-panel:not(.visible) {
+    display: none;
+  }
+
+  #guided-tour {
+    padding: 12px 16px;
+    max-height: 48vh;
+    overflow-y: auto;
+  }
+
+  #guide-text { font-size: 14px; }
+  #guide-heading { font-size: 16px; }
+  #progress-bar { height: auto; min-height: 40px; flex-wrap: wrap; gap: 8px; padding: 8px; }
+  #theme-toggle { position: static; }
+  #progress-label { font-size: 10px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
 .hidden {
   display: none !important;
 }
