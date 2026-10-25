@@ -55,10 +55,9 @@ module.exports = async function verifyRevealContent(page) {
   assert.doesNotMatch(state.note, /next (?:section|reveals?)|we will|illustrative|not a literal|aren't guaranteed|real apps may|some apps/i,
     `Narration previews or softens the explanation at ${key}`);
   if (copyChecks[key]) assert.match(state.slide, copyChecks[key], `Original copy missing at ${key}`);
-  if (key === '3:9' || key === '9:5') {
-    assert.match(state.note, /the model is stateless/i);
-    assert.match(state.note, /the whole conversation is sent every time/i);
-  }
+  // The slides already carry the takeaways; the tour adds what they leave out.
+  assert.doesNotMatch(state.note, /model is stateless|sent every time|thinking out loud|just this loop|isn't learning anything|personality, rules, and capabilities|prompt templates loaded/i,
+    `Narration repeats a slide callout at ${key}`);
   if (key === '9:9') {
     assert.match(state.note, /actual prompts/i, 'The last note must explain the prompts reveal');
   }

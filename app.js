@@ -140,9 +140,7 @@ function restoreChat(key) {
 function initProgressBar() {
   progressDots.innerHTML = '';
   for (let i = 1; i <= TOTAL_STAGES; i++) {
-    const dot = document.createElement('button');
-    dot.type = 'button';
-    dot.setAttribute('aria-label', `Stage ${i}: ${STAGE_NAMES[i]}`);
+    const dot = document.createElement('div');
     dot.className = 'progress-dot';
     dot.dataset.stage = i;
     dot.addEventListener('click', () => jumpToStage(i));
@@ -156,8 +154,6 @@ function updateProgressBar(stage) {
   dots.forEach(dot => {
     const s = parseInt(dot.dataset.stage);
     dot.className = 'progress-dot';
-    if (s === stage) dot.setAttribute('aria-current', 'step');
-    else dot.removeAttribute('aria-current');
     if (s < stage) dot.classList.add('completed');
     else if (s === stage) dot.classList.add('active');
   });
@@ -1458,7 +1454,7 @@ function goForward(automatic = false) {
 function goBack() {
   GuidedTour.pause();
   if (isAnimating) return;
-  if (currentStep <= 0) return;
+  if (currentStep < 0) return;
 
   const step = steps[currentStep];
   step.backward();
@@ -1511,8 +1507,8 @@ function jumpToStage(targetStage) {
 // ── Keyboard handler ──
 
 document.addEventListener('keydown', (e) => {
-  if (e.target.closest('input, textarea, select, [contenteditable="true"]')) return;
-  if (e.key === ' ' && e.target.closest('button')) return;
+  // Let Space press a focused tour button rather than also advancing the slides.
+  if (e.key === ' ' && e.target.closest('#guided-tour, #guide-toggle')) return;
   if (e.key === 'ArrowRight' || e.key === ' ') {
     e.preventDefault();
     goForward();

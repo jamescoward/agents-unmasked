@@ -13,15 +13,16 @@ const verifyRevealContent = require('./reveal-content.cjs');
  await page.goto(process.env.PRESENTATION_URL || 'http://127.0.0.1:8000/');
  await page.waitForSelector('.progress-dot');
  assert.equal(await page.locator('#guided-tour').isVisible(),false);
- const counts=await page.evaluate(()=>Object.keys(GUIDE_NOTES).map(stage=>({stage:Number(stage),notes:GUIDE_NOTES[stage].length,steps:steps.filter(s=>s.stage===Number(stage)).length})));
- for(const {notes,steps} of counts) assert.equal(notes,steps);
+ const counts=await page.evaluate(()=>Object.keys(GUIDE_NOTES).map(stage=>({stage:Number(stage),notes:GUIDE_NOTES[stage].length,steps:steps.filter(s=>s.stage===Number(stage)).length,opens:Boolean(GUIDE_NOTES[stage][0])})));
+ for(const {notes,steps,opens} of counts) {assert.equal(notes,steps);assert.ok(opens,'each stage must open with a note')}
  const last=await page.evaluate(()=>steps.findIndex(s=>s.stage===10)-1);
  assert.equal(last,56);
  await page.locator('#guide-toggle').click();
  assert.equal(await page.locator('#guide-back').isDisabled(),true);
  // Every note must match the visual step, including backwards traversal.
  const verify = async()=> {
-   const expected=await page.evaluate(()=>{const stage=steps[currentStep].stage;return GUIDE_NOTES[stage][currentStep-steps.findIndex(s=>s.stage===stage)][0]});
+   // Steps without their own note keep the stage's previous one on screen.
+   const expected=await page.evaluate(()=>{const stage=steps[currentStep].stage;let i=currentStep-steps.findIndex(s=>s.stage===stage);while(i>0&&!GUIDE_NOTES[stage][i])i--;return GUIDE_NOTES[stage][i][0]});
    assert.equal(await page.locator('#guide-heading').textContent(),expected);
    await verifyRevealContent(page);
  };
@@ -43,7 +44,7 @@ const verifyRevealContent = require('./reveal-content.cjs');
  assert.equal(messagesAfterRewind,0,'rewinding must clear the chat');
  // Autoplay advances after the reading time and pauses cleanly.
  await page.locator('#guide-play').click();
- await page.clock.runFor(30000);
+ await page.clock.runFor(60000);
  assert.ok(await page.evaluate(()=>currentStep)>0);
  await page.locator('#guide-play').click();
  const paused=await page.evaluate(()=>currentStep);
