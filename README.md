@@ -16,12 +16,13 @@ and **Back** to read at your own pace. **Autoplay** advances after a reading del
 stops it. The tour finishes at the conclusion, with build playback offered as an
 optional extra. This mode uses written explanations, with no audio or AI service.
 
-Presenter notes live in `guided.js`, in the same order as each stage's steps in
-`app.js`. Write as a presenter: explain why a step matters, connect it to what the
-audience already understands, and develop the argument. Avoid captions that just
-repeat visible changes. Ground explanations in what has been revealed so far and
-keep each takeaway at its matching callout. Update both files when adding or
-rearranging reveals.
+Presenter notes live in `guided.js`, one entry per step of each stage in `app.js`.
+They hold what the presenter would say out loud: why a step matters, what it
+means in practice, and the background behind the build. Never repeat what the
+slides already say; the callouts carry the takeaways. Use `null` for steps that
+are only animation beats, which keeps the previous note on screen. Don't give
+away a reveal before it appears. Update both files when adding or rearranging
+reveals. The tour never changes the slides themselves.
 
 ## Browser regression check
 
